@@ -1,0 +1,279 @@
+[
+ {
+  "case": "CWE121_Stack_Based_Buffer_Overflow__CWE129_fgets_01",
+  "cwe": "CWE121_Stack_Based_Buffer_Overflow",
+  "compiled": true,
+  "bad_paths": 0,
+  "good_paths": 0,
+  "bad_paths_gnn": 0
+ },
+ {
+  "case": "CWE121_Stack_Based_Buffer_Overflow__CWE129_large_01",
+  "cwe": "CWE121_Stack_Based_Buffer_Overflow",
+  "compiled": true,
+  "bad_paths": 0,
+  "good_paths": 0,
+  "bad_paths_gnn": 5
+ },
+ {
+  "case": "CWE121_Stack_Based_Buffer_Overflow__CWE129_rand_01",
+  "cwe": "CWE121_Stack_Based_Buffer_Overflow",
+  "compiled": true,
+  "bad_paths": 0,
+  "good_paths": 0,
+  "bad_paths_gnn": 5
+ },
+ {
+  "case": "CWE121_Stack_Based_Buffer_Overflow__CWE131_loop_01",
+  "cwe": "CWE121_Stack_Based_Buffer_Overflow",
+  "compiled": true,
+  "bad_paths": 0,
+  "good_paths": 0,
+  "bad_paths_gnn": 4
+ },
+ {
+  "case": "CWE121_Stack_Based_Buffer_Overflow__CWE131_memcpy_01",
+  "cwe": "CWE121_Stack_Based_Buffer_Overflow",
+  "compiled": true,
+  "bad_paths": 0,
+  "good_paths": 0,
+  "bad_paths_gnn": 4
+ },
+ {
+  "case": "CWE121_Stack_Based_Buffer_Overflow__CWE131_memmove_01",
+  "cwe": "CWE121_Stack_Based_Buffer_Overflow",
+  "compiled": true,
+  "bad_paths": 0,
+  "good_paths": 0,
+  "bad_paths_gnn": 4
+ },
+ {
+  "case": "CWE121_Stack_Based_Buffer_Overflow__CWE135_01",
+  "cwe": "CWE121_Stack_Based_Buffer_Overflow",
+  "compiled": true,
+  "bad_paths": 0,
+  "good_paths": 0,
+  "bad_paths_gnn": 3
+ },
+ {
+  "case": "CWE121_Stack_Based_Buffer_Overflow__CWE193_char_alloca_cpy_01",
+  "cwe": "CWE121_Stack_Based_Buffer_Overflow",
+  "compiled": true,
+  "bad_paths": 2,
+  "good_paths": 0
+ },
+ {
+  "case": "CWE121_Stack_Based_Buffer_Overflow__CWE193_char_alloca_loop_01",
+  "cwe": "CWE121_Stack_Based_Buffer_Overflow",
+  "compiled": true,
+  "bad_paths": 0,
+  "good_paths": 0,
+  "bad_paths_gnn": 3
+ },
+ {
+  "case": "CWE121_Stack_Based_Buffer_Overflow__CWE193_char_alloca_memcpy_01",
+  "cwe": "CWE121_Stack_Based_Buffer_Overflow",
+  "compiled": true,
+  "bad_paths": 0,
+  "good_paths": 0,
+  "bad_paths_gnn": 3
+ },
+ {
+  "case": "CWE122_Heap_Based_Buffer_Overflow__CWE131_loop_01",
+  "cwe": "CWE122_Heap_Based_Buffer_Overflow",
+  "compiled": true,
+  "bad_paths": 4,
+  "good_paths": 0
+ },
+ {
+  "case": "CWE122_Heap_Based_Buffer_Overflow__CWE131_memcpy_01",
+  "cwe": "CWE122_Heap_Based_Buffer_Overflow",
+  "compiled": true,
+  "bad_paths": 4,
+  "good_paths": 0
+ },
+ {
+  "case": "CWE122_Heap_Based_Buffer_Overflow__CWE131_memmove_01",
+  "cwe": "CWE122_Heap_Based_Buffer_Overflow",
+  "compiled": true,
+  "bad_paths": 4,
+  "good_paths": 0
+ },
+ {
+  "case": "CWE122_Heap_Based_Buffer_Overflow__CWE135_01",
+  "cwe": "CWE122_Heap_Based_Buffer_Overflow",
+  "compiled": true,
+  "bad_paths": 6,
+  "good_paths": 0
+ },
+ {
+  "case": "CWE122_Heap_Based_Buffer_Overflow__c_CWE129_fgets_01",
+  "cwe": "CWE122_Heap_Based_Buffer_Overflow",
+  "compiled": true,
+  "bad_paths": 6,
+  "good_paths": 2
+ },
+ {
+  "case": "CWE122_Heap_Based_Buffer_Overflow__c_CWE129_large_01",
+  "cwe": "CWE122_Heap_Based_Buffer_Overflow",
+  "compiled": true,
+  "bad_paths": 4,
+  "good_paths": 0
+ },
+ {
+  "case": "CWE122_Heap_Based_Buffer_Overflow__c_CWE129_rand_01",
+  "cwe": "CWE122_Heap_Based_Buffer_Overflow",
+  "compiled": true,
+  "bad_paths": 4,
+  "good_paths": 0
+ },
+ {
+  "case": "CWE122_Heap_Based_Buffer_Overflow__c_CWE193_char_cpy_01",
+  "cwe": "CWE122_Heap_Based_Buffer_Overflow",
+  "compiled": true,
+  "bad_paths": 6,
+  "good_paths": 0
+ },
+ {
+  "case": "CWE122_Heap_Based_Buffer_Overflow__c_CWE193_char_loop_01",
+  "cwe": "CWE122_Heap_Based_Buffer_Overflow",
+  "compiled": true,
+  "bad_paths": 4,
+  "good_paths": 0
+ },
+ {
+  "case": "CWE122_Heap_Based_Buffer_Overflow__c_CWE193_char_memcpy_01",
+  "cwe": "CWE122_Heap_Based_Buffer_Overflow",
+  "compiled": true,
+  "bad_paths": 4,
+  "good_paths": 0
+ },
+ {
+  "case": "CWE134_Uncontrolled_Format_String__char_console_fprintf_01",
+  "cwe": "CWE134_Uncontrolled_Format_String",
+  "compiled": true,
+  "bad_paths": 3,
+  "good_paths": 0
+ },
+ {
+  "case": "CWE134_Uncontrolled_Format_String__char_console_printf_01",
+  "cwe": "CWE134_Uncontrolled_Format_String",
+  "compiled": true,
+  "bad_paths": 3,
+  "good_paths": 0
+ },
+ {
+  "case": "CWE134_Uncontrolled_Format_String__char_console_snprintf_01",
+  "cwe": "CWE134_Uncontrolled_Format_String",
+  "compiled": true,
+  "bad_paths": 3,
+  "good_paths": 1
+ },
+ {
+  "case": "CWE134_Uncontrolled_Format_String__char_console_vfprintf_01",
+  "cwe": "CWE134_Uncontrolled_Format_String",
+  "compiled": true,
+  "bad_paths": 0,
+  "good_paths": 0,
+  "bad_paths_gnn": 0
+ },
+ {
+  "case": "CWE134_Uncontrolled_Format_String__char_console_vprintf_01",
+  "cwe": "CWE134_Uncontrolled_Format_String",
+  "compiled": true,
+  "bad_paths": 0,
+  "good_paths": 0,
+  "bad_paths_gnn": 0
+ },
+ {
+  "case": "CWE134_Uncontrolled_Format_String__char_environment_fprintf_01",
+  "cwe": "CWE134_Uncontrolled_Format_String",
+  "compiled": true,
+  "bad_paths": 6,
+  "good_paths": 1
+ },
+ {
+  "case": "CWE134_Uncontrolled_Format_String__char_environment_printf_01",
+  "cwe": "CWE134_Uncontrolled_Format_String",
+  "compiled": true,
+  "bad_paths": 6,
+  "good_paths": 1
+ },
+ {
+  "case": "CWE134_Uncontrolled_Format_String__char_environment_snprintf_01",
+  "cwe": "CWE134_Uncontrolled_Format_String",
+  "compiled": true,
+  "bad_paths": 6,
+  "good_paths": 2
+ },
+ {
+  "case": "CWE134_Uncontrolled_Format_String__char_environment_vfprintf_01",
+  "cwe": "CWE134_Uncontrolled_Format_String",
+  "compiled": true,
+  "bad_paths": 3,
+  "good_paths": 1
+ },
+ {
+  "case": "CWE134_Uncontrolled_Format_String__char_environment_vprintf_01",
+  "cwe": "CWE134_Uncontrolled_Format_String",
+  "compiled": true,
+  "bad_paths": 3,
+  "good_paths": 1
+ },
+ {
+  "case": "CWE78_OS_Command_Injection__char_console_execl_01",
+  "cwe": "CWE78_OS_Command_Injection",
+  "compiled": true,
+  "bad_paths": 3,
+  "good_paths": 0
+ },
+ {
+  "case": "CWE78_OS_Command_Injection__char_console_execlp_01",
+  "cwe": "CWE78_OS_Command_Injection",
+  "compiled": true,
+  "bad_paths": 3,
+  "good_paths": 0
+ },
+ {
+  "case": "CWE78_OS_Command_Injection__char_console_popen_01",
+  "cwe": "CWE78_OS_Command_Injection",
+  "compiled": true,
+  "bad_paths": 3,
+  "good_paths": 0
+ },
+ {
+  "case": "CWE78_OS_Command_Injection__char_console_system_01",
+  "cwe": "CWE78_OS_Command_Injection",
+  "compiled": true,
+  "bad_paths": 3,
+  "good_paths": 0
+ },
+ {
+  "case": "CWE78_OS_Command_Injection__char_environment_execl_01",
+  "cwe": "CWE78_OS_Command_Injection",
+  "compiled": true,
+  "bad_paths": 6,
+  "good_paths": 0
+ },
+ {
+  "case": "CWE78_OS_Command_Injection__char_environment_execlp_01",
+  "cwe": "CWE78_OS_Command_Injection",
+  "compiled": true,
+  "bad_paths": 6,
+  "good_paths": 0
+ },
+ {
+  "case": "CWE78_OS_Command_Injection__char_environment_popen_01",
+  "cwe": "CWE78_OS_Command_Injection",
+  "compiled": true,
+  "bad_paths": 6,
+  "good_paths": 0
+ },
+ {
+  "case": "CWE78_OS_Command_Injection__char_environment_system_01",
+  "cwe": "CWE78_OS_Command_Injection",
+  "compiled": true,
+  "bad_paths": 6,
+  "good_paths": 0
+ }
+]

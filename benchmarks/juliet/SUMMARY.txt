@@ -1,0 +1,10 @@
+============================================================
+JULIET PILOT RESULTS  (compiled 38/38 cases)
+============================================================
+[Phase 1 standard: name/structure heuristics]
+  TP=27 FN=11 FP=7 TN=31
+  Precision=0.794  Recall=0.711  F1=0.750
+[Phase 2 +GNN type-driven (on missed positives)]
+  positives recovered by GNN: 8
+  Recall(total)=0.921  F1=0.875  (Precision=0.833)
+============================================================

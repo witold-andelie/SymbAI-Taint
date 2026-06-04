@@ -1,0 +1,9 @@
+============================================================
+JULIET standard detection + LLM adjudication  (valid 38 cases)
+============================================================
+[before LLM (standard)] detected positives 27, false-positive negatives 7
+[after LLM] TP=27 FN=11 FP=7 TN=31
+        Precision=0.794  Recall=0.711  F1=0.750
+  -> false positives filtered by LLM: 0 / 7
+  -> true positives killed by LLM:    0 / 27
+============================================================

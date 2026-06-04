@@ -1,0 +1,530 @@
+[
+ {
+  "case": "CWE121_Stack_Based_Buffer_Overflow__CWE129_fgets_01",
+  "bad": {
+   "paths": 0,
+   "survived": 0,
+   "detected_llm": false
+  },
+  "good": {
+   "paths": 0,
+   "survived": 0,
+   "detected_llm": false
+  }
+ },
+ {
+  "case": "CWE121_Stack_Based_Buffer_Overflow__CWE129_large_01",
+  "bad": {
+   "paths": 0,
+   "survived": 0,
+   "detected_llm": false
+  },
+  "good": {
+   "paths": 0,
+   "survived": 0,
+   "detected_llm": false
+  }
+ },
+ {
+  "case": "CWE121_Stack_Based_Buffer_Overflow__CWE129_rand_01",
+  "bad": {
+   "paths": 0,
+   "survived": 0,
+   "detected_llm": false
+  },
+  "good": {
+   "paths": 0,
+   "survived": 0,
+   "detected_llm": false
+  }
+ },
+ {
+  "case": "CWE121_Stack_Based_Buffer_Overflow__CWE131_loop_01",
+  "bad": {
+   "paths": 0,
+   "survived": 0,
+   "detected_llm": false
+  },
+  "good": {
+   "paths": 0,
+   "survived": 0,
+   "detected_llm": false
+  }
+ },
+ {
+  "case": "CWE121_Stack_Based_Buffer_Overflow__CWE131_memcpy_01",
+  "bad": {
+   "paths": 0,
+   "survived": 0,
+   "detected_llm": false
+  },
+  "good": {
+   "paths": 0,
+   "survived": 0,
+   "detected_llm": false
+  }
+ },
+ {
+  "case": "CWE121_Stack_Based_Buffer_Overflow__CWE131_memmove_01",
+  "bad": {
+   "paths": 0,
+   "survived": 0,
+   "detected_llm": false
+  },
+  "good": {
+   "paths": 0,
+   "survived": 0,
+   "detected_llm": false
+  }
+ },
+ {
+  "case": "CWE121_Stack_Based_Buffer_Overflow__CWE135_01",
+  "bad": {
+   "paths": 0,
+   "survived": 0,
+   "detected_llm": false
+  },
+  "good": {
+   "paths": 0,
+   "survived": 0,
+   "detected_llm": false
+  }
+ },
+ {
+  "case": "CWE121_Stack_Based_Buffer_Overflow__CWE193_char_alloca_cpy_01",
+  "bad": {
+   "paths": 2,
+   "survived": 1,
+   "detected_llm": true,
+   "detected_std": true
+  },
+  "good": {
+   "paths": 0,
+   "survived": 0,
+   "detected_llm": false
+  }
+ },
+ {
+  "case": "CWE121_Stack_Based_Buffer_Overflow__CWE193_char_alloca_loop_01",
+  "bad": {
+   "paths": 0,
+   "survived": 0,
+   "detected_llm": false
+  },
+  "good": {
+   "paths": 0,
+   "survived": 0,
+   "detected_llm": false
+  }
+ },
+ {
+  "case": "CWE121_Stack_Based_Buffer_Overflow__CWE193_char_alloca_memcpy_01",
+  "bad": {
+   "paths": 0,
+   "survived": 0,
+   "detected_llm": false
+  },
+  "good": {
+   "paths": 0,
+   "survived": 0,
+   "detected_llm": false
+  }
+ },
+ {
+  "case": "CWE122_Heap_Based_Buffer_Overflow__CWE131_loop_01",
+  "bad": {
+   "paths": 4,
+   "survived": 1,
+   "detected_llm": true,
+   "detected_std": true
+  },
+  "good": {
+   "paths": 0,
+   "survived": 0,
+   "detected_llm": false
+  }
+ },
+ {
+  "case": "CWE122_Heap_Based_Buffer_Overflow__CWE131_memcpy_01",
+  "bad": {
+   "paths": 4,
+   "survived": 1,
+   "detected_llm": true,
+   "detected_std": true
+  },
+  "good": {
+   "paths": 0,
+   "survived": 0,
+   "detected_llm": false
+  }
+ },
+ {
+  "case": "CWE122_Heap_Based_Buffer_Overflow__CWE131_memmove_01",
+  "bad": {
+   "paths": 4,
+   "survived": 1,
+   "detected_llm": true,
+   "detected_std": true
+  },
+  "good": {
+   "paths": 0,
+   "survived": 0,
+   "detected_llm": false
+  }
+ },
+ {
+  "case": "CWE122_Heap_Based_Buffer_Overflow__CWE135_01",
+  "bad": {
+   "paths": 6,
+   "survived": 1,
+   "detected_llm": true,
+   "detected_std": true
+  },
+  "good": {
+   "paths": 0,
+   "survived": 0,
+   "detected_llm": false
+  }
+ },
+ {
+  "case": "CWE122_Heap_Based_Buffer_Overflow__c_CWE129_fgets_01",
+  "bad": {
+   "paths": 6,
+   "survived": 1,
+   "detected_llm": true,
+   "detected_std": true
+  },
+  "good": {
+   "paths": 2,
+   "survived": 1,
+   "detected_llm": true,
+   "detected_std": true
+  }
+ },
+ {
+  "case": "CWE122_Heap_Based_Buffer_Overflow__c_CWE129_large_01",
+  "bad": {
+   "paths": 4,
+   "survived": 1,
+   "detected_llm": true,
+   "detected_std": true
+  },
+  "good": {
+   "paths": 0,
+   "survived": 0,
+   "detected_llm": false
+  }
+ },
+ {
+  "case": "CWE122_Heap_Based_Buffer_Overflow__c_CWE129_rand_01",
+  "bad": {
+   "paths": 4,
+   "survived": 1,
+   "detected_llm": true,
+   "detected_std": true
+  },
+  "good": {
+   "paths": 0,
+   "survived": 0,
+   "detected_llm": false
+  }
+ },
+ {
+  "case": "CWE122_Heap_Based_Buffer_Overflow__c_CWE193_char_cpy_01",
+  "bad": {
+   "paths": 6,
+   "survived": 1,
+   "detected_llm": true,
+   "detected_std": true
+  },
+  "good": {
+   "paths": 0,
+   "survived": 0,
+   "detected_llm": false
+  }
+ },
+ {
+  "case": "CWE122_Heap_Based_Buffer_Overflow__c_CWE193_char_loop_01",
+  "bad": {
+   "paths": 4,
+   "survived": 1,
+   "detected_llm": true,
+   "detected_std": true
+  },
+  "good": {
+   "paths": 0,
+   "survived": 0,
+   "detected_llm": false
+  }
+ },
+ {
+  "case": "CWE122_Heap_Based_Buffer_Overflow__c_CWE193_char_memcpy_01",
+  "bad": {
+   "paths": 4,
+   "survived": 1,
+   "detected_llm": true,
+   "detected_std": true
+  },
+  "good": {
+   "paths": 0,
+   "survived": 0,
+   "detected_llm": false
+  }
+ },
+ {
+  "case": "CWE134_Uncontrolled_Format_String__char_console_fprintf_01",
+  "bad": {
+   "paths": 3,
+   "survived": 1,
+   "detected_llm": true,
+   "detected_std": true
+  },
+  "good": {
+   "paths": 0,
+   "survived": 0,
+   "detected_llm": false
+  }
+ },
+ {
+  "case": "CWE134_Uncontrolled_Format_String__char_console_printf_01",
+  "bad": {
+   "paths": 3,
+   "survived": 1,
+   "detected_llm": true,
+   "detected_std": true
+  },
+  "good": {
+   "paths": 0,
+   "survived": 0,
+   "detected_llm": false
+  }
+ },
+ {
+  "case": "CWE134_Uncontrolled_Format_String__char_console_snprintf_01",
+  "bad": {
+   "paths": 3,
+   "survived": 1,
+   "detected_llm": true,
+   "detected_std": true
+  },
+  "good": {
+   "paths": 1,
+   "survived": 1,
+   "detected_llm": true,
+   "detected_std": true
+  }
+ },
+ {
+  "case": "CWE134_Uncontrolled_Format_String__char_console_vfprintf_01",
+  "bad": {
+   "paths": 0,
+   "survived": 0,
+   "detected_llm": false
+  },
+  "good": {
+   "paths": 0,
+   "survived": 0,
+   "detected_llm": false
+  }
+ },
+ {
+  "case": "CWE134_Uncontrolled_Format_String__char_console_vprintf_01",
+  "bad": {
+   "paths": 0,
+   "survived": 0,
+   "detected_llm": false
+  },
+  "good": {
+   "paths": 0,
+   "survived": 0,
+   "detected_llm": false
+  }
+ },
+ {
+  "case": "CWE134_Uncontrolled_Format_String__char_environment_fprintf_01",
+  "bad": {
+   "paths": 6,
+   "survived": 1,
+   "detected_llm": true,
+   "detected_std": true
+  },
+  "good": {
+   "paths": 1,
+   "survived": 1,
+   "detected_llm": true,
+   "detected_std": true
+  }
+ },
+ {
+  "case": "CWE134_Uncontrolled_Format_String__char_environment_printf_01",
+  "bad": {
+   "paths": 6,
+   "survived": 1,
+   "detected_llm": true,
+   "detected_std": true
+  },
+  "good": {
+   "paths": 1,
+   "survived": 1,
+   "detected_llm": true,
+   "detected_std": true
+  }
+ },
+ {
+  "case": "CWE134_Uncontrolled_Format_String__char_environment_snprintf_01",
+  "bad": {
+   "paths": 6,
+   "survived": 1,
+   "detected_llm": true,
+   "detected_std": true
+  },
+  "good": {
+   "paths": 2,
+   "survived": 1,
+   "detected_llm": true,
+   "detected_std": true
+  }
+ },
+ {
+  "case": "CWE134_Uncontrolled_Format_String__char_environment_vfprintf_01",
+  "bad": {
+   "paths": 3,
+   "survived": 1,
+   "detected_llm": true,
+   "detected_std": true
+  },
+  "good": {
+   "paths": 1,
+   "survived": 1,
+   "detected_llm": true,
+   "detected_std": true
+  }
+ },
+ {
+  "case": "CWE134_Uncontrolled_Format_String__char_environment_vprintf_01",
+  "bad": {
+   "paths": 3,
+   "survived": 1,
+   "detected_llm": true,
+   "detected_std": true
+  },
+  "good": {
+   "paths": 1,
+   "survived": 1,
+   "detected_llm": true,
+   "detected_std": true
+  }
+ },
+ {
+  "case": "CWE78_OS_Command_Injection__char_console_execl_01",
+  "bad": {
+   "paths": 3,
+   "survived": 1,
+   "detected_llm": true,
+   "detected_std": true
+  },
+  "good": {
+   "paths": 0,
+   "survived": 0,
+   "detected_llm": false
+  }
+ },
+ {
+  "case": "CWE78_OS_Command_Injection__char_console_execlp_01",
+  "bad": {
+   "paths": 3,
+   "survived": 1,
+   "detected_llm": true,
+   "detected_std": true
+  },
+  "good": {
+   "paths": 0,
+   "survived": 0,
+   "detected_llm": false
+  }
+ },
+ {
+  "case": "CWE78_OS_Command_Injection__char_console_popen_01",
+  "bad": {
+   "paths": 3,
+   "survived": 1,
+   "detected_llm": true,
+   "detected_std": true
+  },
+  "good": {
+   "paths": 0,
+   "survived": 0,
+   "detected_llm": false
+  }
+ },
+ {
+  "case": "CWE78_OS_Command_Injection__char_console_system_01",
+  "bad": {
+   "paths": 3,
+   "survived": 1,
+   "detected_llm": true,
+   "detected_std": true
+  },
+  "good": {
+   "paths": 0,
+   "survived": 0,
+   "detected_llm": false
+  }
+ },
+ {
+  "case": "CWE78_OS_Command_Injection__char_environment_execl_01",
+  "bad": {
+   "paths": 6,
+   "survived": 1,
+   "detected_llm": true,
+   "detected_std": true
+  },
+  "good": {
+   "paths": 0,
+   "survived": 0,
+   "detected_llm": false
+  }
+ },
+ {
+  "case": "CWE78_OS_Command_Injection__char_environment_execlp_01",
+  "bad": {
+   "paths": 6,
+   "survived": 1,
+   "detected_llm": true,
+   "detected_std": true
+  },
+  "good": {
+   "paths": 0,
+   "survived": 0,
+   "detected_llm": false
+  }
+ },
+ {
+  "case": "CWE78_OS_Command_Injection__char_environment_popen_01",
+  "bad": {
+   "paths": 6,
+   "survived": 1,
+   "detected_llm": true,
+   "detected_std": true
+  },
+  "good": {
+   "paths": 0,
+   "survived": 0,
+   "detected_llm": false
+  }
+ },
+ {
+  "case": "CWE78_OS_Command_Injection__char_environment_system_01",
+  "bad": {
+   "paths": 6,
+   "survived": 1,
+   "detected_llm": true,
+   "detected_std": true
+  },
+  "good": {
+   "paths": 0,
+   "survived": 0,
+   "detected_llm": false
+  }
+ }
+]
