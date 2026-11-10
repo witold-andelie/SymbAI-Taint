@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-/* Expected vulnerability (GT annotation): tainted argv flows through main into the custom buffer sink store_record */
+/* Expected defect (GT annotation): tainted argv flows through main into the custom buffer sink store_record */
 // @vuln: buffer_overflow argv -> store_record
 
 /*

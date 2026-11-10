@@ -72,7 +72,7 @@ SOURCE_FUNCTIONS = {
     'getline', 'getdelim',
 }
 
-# Common sink functions (dangerous operations)
+# Common sink functions (operations requiring validation)
 SINK_FUNCTIONS = {
     'strcpy', 'strncpy', 'strcat', 'strncat',
     'sprintf', 'snprintf', 'vsprintf', 'vsnprintf',
@@ -85,7 +85,7 @@ SINK_FUNCTIONS = {
     'scanf', 'fscanf', 'sscanf',  # Also sources
 }
 
-# Dangerous patterns
+# Potential defect patterns
 DANGEROUS_PATTERNS = [
     (r'gets\s*\(', 'buffer_overflow', 'gets() is always unsafe'),
     (r'strcpy\s*\(', 'buffer_overflow', 'strcpy() without length check'),
@@ -373,7 +373,7 @@ def identify_sources(functions: List[FunctionInfo], lines: List[str]) -> List[st
 
 
 def identify_sinks(functions: List[FunctionInfo], lines: List[str]) -> List[str]:
-    """Identify sink functions (dangerous operations)."""
+    """Identify sink functions (operations requiring validation)."""
     sinks = set()
 
     # From function definitions
@@ -594,7 +594,7 @@ def extract_types(variables: List[VariableInfo]) -> Dict[str, str]:
 
 
 def extract_annotations(raw_source: str) -> List[TaintPath]:
-    """Parse explicit vulnerability annotations from source comments.
+    """Parse explicit defect annotations from source comments.
 
     Format (case-insensitive):  // @vuln: <type> <source> -> <sink>
     e.g.  // @vuln: buffer_overflow argv -> store_record
@@ -616,7 +616,7 @@ def extract_annotations(raw_source: str) -> List[TaintPath]:
 
 
 def _is_vulnerable_path(path: TaintPath) -> bool:
-    """Check if a taint path represents a vulnerability."""
+    """Check if a taint path represents a defect."""
     if getattr(path, 'annotated', False):
         return True
     vulnerable_sinks = {'strcpy', 'strcat', 'sprintf', 'gets', 'system', 'exec'}

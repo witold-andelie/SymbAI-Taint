@@ -209,7 +209,7 @@ def get_source_functions() -> Set[str]:
 
 
 def get_sink_functions() -> Set[str]:
-    """Get set of known sink functions (dangerous operations)."""
+    """Get set of known sink functions (operations requiring validation)."""
     return {
         'strcpy', 'strncpy', 'strcat', 'strncat',
         'sprintf', 'snprintf', 'vsprintf', 'vsnprintf',

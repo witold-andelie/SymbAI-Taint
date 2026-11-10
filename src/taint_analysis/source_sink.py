@@ -101,8 +101,8 @@ class SourceSinkChecker:
         return False
 
     def _check_vulnerability(self, source: Any, sink: Any) -> bool:
-        """Check if a source-sink flow represents a vulnerability."""
-        # Check against known vulnerability patterns
+        """Check if a source-sink flow represents a defect."""
+        # Check against known defect patterns
         sink_sinks = self.taint_spec.get('sinks', [])
         for sink_spec in sink_sinks:
             if sink_spec.get('type') in ['buffer_overflow', 'format_string', 'command_injection']:
@@ -155,7 +155,7 @@ def check_source_sink(
 
 
 def get_vulnerability_summary(traces: List[TaintTrace]) -> Dict[str, Any]:
-    """Get summary of vulnerabilities found."""
+    """Get summary of defects found."""
     total_traces = len(traces)
     vulnerable_traces = sum(1 for t in traces if t.is_vulnerable)
 

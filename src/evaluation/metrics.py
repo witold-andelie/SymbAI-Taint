@@ -111,7 +111,7 @@ def compute_metrics(
     expected_sources = set(ground_truth.get('sources', []))
     expected_sinks = set(ground_truth.get('sinks', []))
 
-    # Count vulnerable paths
+    # Count defective paths
     vulnerable_detected = sum(1 for t in taint_trace if t.get('is_vulnerable'))
     vulnerable_expected = len(ground_truth.get('vulnerable_paths', []))
 

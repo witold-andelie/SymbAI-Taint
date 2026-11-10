@@ -1,20 +1,20 @@
 /**
  * Command Injection Test Program
- * Tests detection of command injection vulnerabilities
+ * Tests detection of command injection defects
  */
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-// Vulnerability 1: Direct command injection via system()
+// Defect 1: Direct command injection via system()
 void vuln_system(const char *input) {
     char command[256];
     sprintf(command, "echo %s", input);
     system(command);  // User-controlled command
 }
 
-// Vulnerability 2: Command injection via popen()
+// Defect 2: Command injection via popen()
 void vuln_popen(const char *input) {
     char command[256];
     snprintf(command, sizeof(command), "ls %s", input);
@@ -28,7 +28,7 @@ void vuln_popen(const char *input) {
     }
 }
 
-// Vulnerability 3: Command injection via exec()
+// Defect 3: Command injection via exec()
 void vuln_exec(const char *input) {
     char *args[] = {"/bin/sh", "-c", NULL, NULL};
     char command[256];
@@ -52,7 +52,7 @@ int main(int argc, char *argv[]) {
 
     char *user_input = argv[1];
 
-    // Test command injection vulnerabilities
+    // Test command injection defects
     vuln_system(user_input);
     // vuln_popen(user_input);  // Commented to avoid execution
     // vuln_exec(user_input);   // Commented to avoid execution

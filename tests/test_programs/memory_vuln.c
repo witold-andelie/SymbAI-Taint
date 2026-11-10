@@ -1,13 +1,13 @@
 /**
- * Memory Vulnerability Test Program
- * Tests detection of memory-related vulnerabilities
+ * Memory Defect Test Program
+ * Tests detection of memory-related defects
  */
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-// Vulnerability 1: Use-after-free
+// Defect 1: Use-after-free
 void vuln_use_after_free(const char *input) {
     char *buffer = malloc(64);
     if (buffer) {
@@ -15,21 +15,21 @@ void vuln_use_after_free(const char *input) {
         printf("Buffer: %s\n", buffer);
         free(buffer);
         // Use-after-free: accessing freed memory
-        printf("After free: %s\n", buffer);  // Vulnerability!
+        printf("After free: %s\n", buffer);  // Defect!
     }
 }
 
-// Vulnerability 2: Double free
+// Defect 2: Double free
 void vuln_double_free(const char *input) {
     char *buffer = malloc(64);
     if (buffer) {
         strcpy(buffer, input);
         free(buffer);
-        free(buffer);  // Double free!  // Vulnerability!
+        free(buffer);  // Double free!  // Defect!
     }
 }
 
-// Vulnerability 3: Memory leak (not a security vuln, but bad practice)
+// Defect 3: Memory leak (a resource-management issue)
 void vuln_memory_leak(const char *input) {
     char *buffer = malloc(64);
     if (buffer) {
@@ -39,7 +39,7 @@ void vuln_memory_leak(const char *input) {
     }
 }
 
-// Vulnerability 4: Uninitialized memory
+// Defect 4: Uninitialized memory
 void vuln_uninitialized(const char *input) {
     char buffer[64];
     // buffer is not initialized
@@ -65,7 +65,7 @@ int main(int argc, char *argv[]) {
 
     char *user_input = argv[1];
 
-    // Test memory vulnerabilities
+    // Test memory defects
     vuln_use_after_free(user_input);
     // vuln_double_free(user_input);  // Commented to avoid crash
     vuln_memory_leak(user_input);

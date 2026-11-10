@@ -2,7 +2,7 @@
 
 > Material for a technical talk and as a paper skeleton, plus an anticipated technical Q&A.
 > **Tone: honest, defensible, no overclaiming.** A technical audience sees through inflation; we trade
-> a clear threat model and honest limitations for credibility.
+> clear analysis assumptions and honest limitations for credibility.
 >
 > One-line positioning: **a neuro-symbolic (GNN + symbolic execution + LLM) automated taint-analysis
 > system for stripped binaries.**
@@ -11,7 +11,7 @@
 
 ## 1. Abstract
 
-Vulnerability-oriented taint analysis on stripped binaries is hard because of **missing semantics**: there
+Taint analysis for program correctness on stripped binaries is hard because of **missing semantics**: there
 are no reliable cues for variable names, types, or function boundaries, so traditional function-name-based
 source-sink matching degrades when symbols are gone. We present **SymbAI-Taint**, a 13-stage pipeline that
 orchestrates three complementary capabilities: (1) **GNN type recovery** (integrating TYGR/GlowGNN) to
@@ -28,19 +28,19 @@ quantifiably lifts recall — which is the system's distinguishing value over pu
 
 ## 2. Problem & Motivation
 
-- **Why stripped binaries**: real-world targets (firmware, closed-source commercial software, malware) are
-  usually source-less and frequently `strip --strip-all`-ed. Security auditing must work at the binary level.
+- **Why stripped binaries**: real-world targets (firmware, closed-source commercial software, compiled libraries) are
+  usually source-less and frequently `strip --strip-all`-ed. Program analysis must work at the binary level.
 - **Taint analysis depends on semantics**: source/sink identification traditionally relies on **function
   names** (libc: `gets`/`strcpy`/`system`/`printf`). Dynamic (imported) symbols survive even `--strip-all`
-  (dynamic relocation needs them), but **local/custom function names are gone** → a custom dangerous buffer
+  (dynamic relocation needs them), but **local/custom function names are gone** → a custom unchecked buffer
   operation becomes a nameless `sub_xxxx`, and name matching fails.
 - **The value of type semantics**: knowing that "the argument of `sub_4011e9` is a `char*` buffer written
   out of bounds" is what lets us flag it as a sink candidate. **Type recovery** fills this gap.
-- **No single technique suffices**: the GNN gives types but no proof of exploitability; symbolic execution
+- **No single technique suffices**: the GNN gives types but no proof that a defect is reproducible; symbolic execution
   gives constraints but suffers path explosion and lacks high-level semantics; the LLM has semantic
   intuition but hallucinates. **Orchestrating all three** is what makes it robust.
 
-## 3. Threat Model & Scope — honest statement
+## 3. Analysis Assumptions & Scope — honest statement
 
 | Dimension | Assumption / scope |
 |---|---|
@@ -87,7 +87,7 @@ Source / Binary
   `mapped_base` so types attach to the correct named CFG functions.
 
 ### 5.2 Symbolic "hard evidence" (formal component)
-Not just "possibly dangerous" but **verifiable evidence** via constraint solving:
+Assess potential defects using **verifiable evidence** from constraint solving:
 - `strncpy(dst, src, n)`: extract `n`'s symbolic constraints and prove `n` is **not bounded by dst's size**
   (the safety illusion is broken).
 - `gets(buf)`: construct **unconditional stack-overflow** evidence (no upper bound on input length).
@@ -158,7 +158,7 @@ cross-border isolation):
 3. **The LLM precision gain did not materialize in this configuration (negative result)**: in ② the LLM is
    a no-op (filtered 0/7 false positives, killed 0/27 true positives); ④ naive stacking drops precision to
    0.522. **Root cause**: the batch ablation fed the LLM only GNN-type evidence, **without the angr
-   symbolic constraints** (the hard evidence that distinguishes "safe" from "dangerous" sinks). So it
+   symbolic constraints** (the hard evidence that distinguishes "safe" from "potentially invalid" sinks). So it
    proves **"LLM + types-only = no-op," not "LLM is useless."** A full neuro-symbolic + LLM evaluation
    (with symbolic hard evidence) on Juliet is the next step (§8).
 
@@ -175,18 +175,18 @@ cross-border isolation):
    (P = 0.522). A stronger trigger is needed (in-function evidence of an unbounded write with a tainted
    index), not "any char* parameter ⇒ sink."
 4. **Scale**: a 38-case Juliet pilot done (baseline F1 = 0.75 → GNN 0.875); still need hundreds of cases +
-   real CVEs, more CWEs and flow variants (02–54). Currently only single-file baseline variant `_01`.
+   real-world defect/fix pairs, more CWEs and flow variants (02–54). Currently only single-file baseline variant `_01`.
 5. **LLM latency**: ~30–40 s/path, a throughput bottleneck.
-6. **Not sound/complete**: see the threat model.
+6. **Not sound/complete**: see the analysis assumptions.
 
 ## 9. Related Work & Novelty
-- **TYGR** (whose type inference we reuse): type inference only, not end-to-end vulnerability analysis. Our
+- **TYGR** (whose type inference we reuse): type inference only, not end-to-end defect analysis. Our
   contribution is **orchestrating it into a neuro-symbolic taint pipeline** and solving its cross-version
   engineering.
 - **ORACAL-style multimodal fusion**: architectural inspiration.
 - Classic taint (libdft/Triton/angr's own): purely static/dynamic, lacking high-level semantic adjudication.
 - **Novelty claim (restrained)**: not a new GNN or solver, but a **systematic method that orchestrates GNN
-  type semantics + symbolic hard evidence + LLM adjudication for stripped-binary vulnerability discovery**,
+  type semantics + symbolic hard evidence + LLM adjudication for stripped-binary defect discovery**,
   plus a reproducible engineering implementation.
 
 ---
@@ -201,7 +201,7 @@ evidence → adjudication → evaluation, no bugs in the loop). So we **ran a re
 Juliet, 38 cases, with metrics honestly dropping to a **baseline F1 = 0.75 (R = 0.71)** — extrapolatable
 data. More importantly, **GNN type-driven detection raises recall to 0.92**, recovering 8 CWE121 stack
 overflows that libc-name matching entirely misses. We don't avoid the drop; we use it to quantify the GNN's
-value (§7.2). Next is scaling to hundreds of cases + real CVEs.
+value (§7.2). Next is scaling to hundreds of cases + real-world defect/fix pairs.
 
 **Q: How much does the GNN actually help on real data?**
 A: On the Juliet pilot, **recall +21 pts (0.711 → 0.921), F1 +12.5 pts (0.750 → 0.875)**. The gain comes
@@ -227,7 +227,7 @@ locations to feed the GNN. The current demos use a `-g` copy for variable locati
 itself may be fully stripped. Wiring in variable recovery is a clear engineering next step, not a
 theoretical barrier — the GNN's features come from the symbolic glow graph and don't depend on symbol names.
 
-**Q: Will the LLM hallucinate vulnerabilities?**
+**Q: Will the LLM hallucinate defects?**
 A: The LLM **does not decide alone** — it adjudicates on top of symbolic hard evidence + path scores and
 records its CoT for auditability. But we empirically found the opposite problem: **when evidence is
 insufficient, the LLM is biased toward "real"** (see the ablation), so it is more likely to miss "should be
@@ -253,7 +253,7 @@ by path prioritization + heuristic pruning.
 
 **Q: Soundness / completeness?**
 A: Neither is guaranteed. This is a bug-finding system, not a verifier. The design goal is high-quality
-discovery + low false positives (via symbolic hard evidence + adjudication), with an explicit threat model.
+discovery + low false positives (via symbolic hard evidence + adjudication), with explicit analysis assumptions.
 
 **Q: Reproducibility?**
 A: All versions are pinned (`environment.yml` + `req_rest.txt`), a one-click script builds `tygr-orig`, the
@@ -267,9 +267,9 @@ nothing to judge on. The core is **evidence generation**, not prompting.
 ---
 
 ## 11. Talk Takeaways (3 sentences)
-1. The bottleneck of stripped-binary vulnerability analysis is **missing semantics**; we use **GNN type
+1. The bottleneck of stripped-binary defect analysis is **missing semantics**; we use **GNN type
    recovery** to restore type semantics even under full stripping (demonstrated).
-2. We turn "possibly dangerous" into "explainable, auditable decisions" with **symbolic hard evidence + LLM
+2. We assess potential defects through explainable, auditable decisions with **symbolic hard evidence + LLM
    adjudication** — though, honestly, the LLM precision gain is not yet realized on real benchmarks (a
    negative result we report openly).
 3. We know our boundaries: toy scale, DWARF-locate dependency, LLM not yet delivering — these are clear,

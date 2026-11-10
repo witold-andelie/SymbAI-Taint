@@ -1,27 +1,27 @@
 /**
  * Buffer Overflow Test Program
- * Tests detection of various buffer overflow vulnerabilities
+ * Tests detection of various buffer overflow defects
  */
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-// Vulnerability 1: Stack buffer overflow via strcpy
+// Defect 1: Stack buffer overflow via strcpy
 void vuln_strcpy(const char *input) {
     char buffer[32];
     strcpy(buffer, input);  // No bounds checking
     printf("Buffer: %s\n", buffer);
 }
 
-// Vulnerability 2: Stack buffer overflow via strcat
+// Defect 2: Stack buffer overflow via strcat
 void vuln_strcat(const char *input) {
     char buffer[32] = "Hello ";
     strcat(buffer, input);  // No bounds checking
     printf("Result: %s\n", buffer);
 }
 
-// Vulnerability 3: Heap buffer overflow
+// Defect 3: Heap buffer overflow
 void vuln_heap(const char *input) {
     char *buffer = malloc(32);
     if (buffer) {
@@ -31,7 +31,7 @@ void vuln_heap(const char *input) {
     }
 }
 
-// Vulnerability 4: Off-by-one error
+// Defect 4: Off-by-one error
 void vuln_offbyone(const char *input) {
     char buffer[32];
     int i;
@@ -57,7 +57,7 @@ int main(int argc, char *argv[]) {
 
     char *user_input = argv[1];
 
-    // Test various buffer overflow vulnerabilities
+    // Test various buffer overflow defects
     vuln_strcpy(user_input);
     vuln_strcat(user_input);
     vuln_heap(user_input);

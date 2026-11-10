@@ -516,7 +516,7 @@ class OPMPipeline:
             # Get lifecycle analysis from taint state
             lifecycle_analysis = self.state.taint_state.get('lifecycle_analysis', '')
 
-            # Build global symbolic evidence (GNN + dangerous calls + types + angr constraints)
+            # Build global symbolic evidence (GNN + calls requiring validation + types + angr constraints)
             global_evidence = self._build_symbolic_evidence()
 
             # Use LLM with Chain-of-Thought reasoning
@@ -588,9 +588,9 @@ class OPMPipeline:
         except Exception as e:
             logger.debug(f"GNN report generation failed: {e}")
 
-        # 2. Call graph evidence (dangerous functions)
+        # 2. Call graph evidence (functions requiring validation)
         if self.state.call_graph:
-            evidence_parts.append("\n### Dangerous Function Calls")
+            evidence_parts.append("\n### Function calls requiring validation")
             for addr, cs in self.state.call_graph.call_sites.items():
                 if cs.callee in {'gets', 'strcpy', 'free', 'malloc', 'system', 'sprintf'}:
                     evidence_parts.append(f"- {cs.caller} -> {cs.callee} at {hex(addr)}")
@@ -622,7 +622,7 @@ class OPMPipeline:
         """Build per-path symbolic 'hard evidence' for a single taint path.
 
         Delegates to ConstraintExtractor.build_semantic_evidence, which turns the
-        established taint facts (taint-derived dangerous argument, no recovered bound)
+        established taint facts (taint-derived argument requiring validation, no recovered bound)
         into an explicit statement the LLM cannot dismiss via function-name bias
         (e.g. "strncpy size is UNCONSTRAINED -> overflow SAT").
         """

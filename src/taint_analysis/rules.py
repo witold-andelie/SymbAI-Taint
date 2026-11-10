@@ -238,7 +238,7 @@ def get_sink_type(spec: TaintSpec, function_name: str) -> Optional[str]:
 
 
 def get_vulnerable_args(spec: TaintSpec, function_name: str) -> List[int]:
-    """Get vulnerable argument indices for a sink function."""
+    """Get defective argument indices for a sink function."""
     for sink in spec.sinks:
         if sink.name == function_name:
             return sink.vulnerable_args

@@ -55,7 +55,7 @@ void CWE134_Uncontrolled_Format_String__char_environment_snprintf_01_bad()
     }
     {
         char dest[100] = "";
-        /* POTENTIAL FLAW: Do not specify the format allowing a possible format string vulnerability */
+        /* POTENTIAL FLAW: Do not specify the format allowing a possible format string defect */
         SNPRINTF(dest, 100-1, data);
         printLine(dest);
     }
@@ -75,7 +75,7 @@ static void goodG2B()
     strcpy(data, "fixedstringtest");
     {
         char dest[100] = "";
-        /* POTENTIAL FLAW: Do not specify the format allowing a possible format string vulnerability */
+        /* POTENTIAL FLAW: Do not specify the format allowing a possible format string defect */
         SNPRINTF(dest, 100-1, data);
         printLine(dest);
     }
@@ -100,7 +100,7 @@ static void goodB2G()
     }
     {
         char dest[100] = "";
-        /* FIX: Specify the format disallowing a format string vulnerability */
+        /* FIX: Specify the format disallowing a format string defect */
         SNPRINTF(dest, 100-1, "%s", data);
         printLine(dest);
     }

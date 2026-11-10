@@ -1,25 +1,25 @@
 /**
  * Format String Test Program
- * Tests detection of format string vulnerabilities
+ * Tests detection of format string defects
  */
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-// Vulnerability 1: Direct format string
+// Defect 1: Direct format string
 void vuln_printf_direct(const char *input) {
     printf(input);  // User-controlled format string
 }
 
-// Vulnerability 2: Format string via sprintf
+// Defect 2: Format string via sprintf
 void vuln_sprintf(const char *input) {
     char buffer[256];
     sprintf(buffer, input);  // User-controlled format string
     printf("Result: %s\n", buffer);
 }
 
-// Vulnerability 3: Format string with fprintf
+// Defect 3: Format string with fprintf
 void vuln_fprintf(const char *input) {
     fprintf(stdout, input);  // User-controlled format string
 }
@@ -37,7 +37,7 @@ int main(int argc, char *argv[]) {
 
     char *user_input = argv[1];
 
-    // Test format string vulnerabilities
+    // Test format string defects
     vuln_printf_direct(user_input);
     vuln_sprintf(user_input);
     vuln_fprintf(user_input);

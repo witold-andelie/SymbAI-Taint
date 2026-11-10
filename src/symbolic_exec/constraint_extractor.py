@@ -30,7 +30,7 @@ class PathEvidence:
     constraints: List[SymbolicConstraint] = field(default_factory=list)
     # Parameter analysis
     param_ranges: Dict[str, Tuple[int, int]] = field(default_factory=dict)
-    # Dangerous patterns detected
+    # Potential defect patterns detected
     dangerous_patterns: List[str] = field(default_factory=list)
 
 
@@ -40,7 +40,7 @@ class ConstraintExtractor:
     """
 
     def __init__(self):
-        # Dangerous function parameter patterns
+        # Parameter patterns for functions requiring validation
         self.dangerous_patterns = {
             'strncpy': {
                 'param': 'size',
@@ -92,7 +92,7 @@ class ConstraintExtractor:
             # Analyze register values
             self._analyze_registers(state, evidence)
 
-            # Check for dangerous patterns
+            # Check for potential defect patterns
             self._check_dangerous_patterns(state, evidence)
 
         except Exception as e:
@@ -207,24 +207,24 @@ class ConstraintExtractor:
             logger.debug(f"Failed to analyze registers: {e}")
 
     def _check_dangerous_patterns(self, state: Any, evidence: PathEvidence):
-        """Check for dangerous patterns in the state."""
+        """Check for potential defect patterns in the state."""
         try:
             # Check if any parameter is unconstrained and large
             for param_name, (min_val, max_val) in evidence.param_ranges.items():
-                # Size parameters that are very large are dangerous
+                # Size parameters that are very large are potentially invalid
                 if max_val > 0x10000:  # > 64KB
                     evidence.dangerous_patterns.append(
                         f"Parameter {param_name} has large range [{min_val}, {max_val}]"
                     )
 
-                # Unconstrained parameters are dangerous
+                # Unconstrained parameters are potentially invalid
                 if max_val - min_val > 0xFFFFFFFF:
                     evidence.dangerous_patterns.append(
                         f"Parameter {param_name} is unconstrained (user-controlled)"
                     )
 
         except Exception as e:
-            logger.debug(f"Failed to check dangerous patterns: {e}")
+            logger.debug(f"Failed to check potential defect patterns: {e}")
 
     def extract_from_states(self, states: List[Any],
                             function_name: str = 'analyzed_function') -> List[str]:
@@ -263,8 +263,8 @@ class ConstraintExtractor:
         Build per-path "hard evidence" that defeats function-name safety bias.
 
         This is the symbolic-evidence fallback used when angr did not recover a concrete
-        bound for the dangerous argument. It is *honest*: every claim is premised on what
-        the taint/path analysis already established -- the dangerous argument is
+        bound for the argument requiring validation. It is *honest*: every claim is premised on what
+        the taint/path analysis already established -- the argument requiring validation is
         taint-derived AND no bounding constraint was recovered along this path. Under that
         premise an N-bit value is, by definition, unconstrained up to 2^N - 1.
 
@@ -289,13 +289,13 @@ class ConstraintExtractor:
         if sink in unbounded_input_sinks:
             lines += [
                 "### Symbolic Constraint Evidence (unbounded input)",
-                f"- `{sink}()` in `{sink_caller}()` reads attacker-controlled input into a "
+                f"- `{sink}()` in `{sink_caller}()` reads external input into a "
                 f"destination buffer with NO length argument and NO bounds check whatsoever.",
-                "- The number of bytes written is bounded ONLY by the attacker-supplied input "
+                "- The number of bytes written is bounded ONLY by the externally supplied input "
                 "length; no recovered path constraint can cap it.",
                 "- => overflowing the destination buffer is UNCONDITIONALLY satisfiable.",
                 f"- CONCLUSION: `{sink}()` is an unconditional stack buffer overflow (CWE-242) — "
-                "its danger does not depend on any path condition. This is a REAL vulnerability.",
+                "its danger does not depend on any path condition. This is a REAL defect.",
             ]
         elif sink in size_bounded_sinks:
             lines += [
@@ -324,7 +324,7 @@ class ConstraintExtractor:
                 "### Symbolic Constraint Evidence (command string)",
                 f"- `{sink}` executes a command string that is taint-derived from `{source}` "
                 f"with no recovered sanitization constraint.",
-                "- => attacker-controlled shell metacharacters are reachable -> "
+                "- => input-controlled shell metacharacters are reachable -> "
                 "command injection is SATISFIABLE.",
             ]
         elif sink == 'free':
@@ -334,7 +334,7 @@ class ConstraintExtractor:
                 f"(from `{source}`).",
                 "- Cross-reference the MEMORY LIFECYCLE STATE MACHINE for "
                 "Use-After-Free / Double-Free / tainted-free.",
-                "- A rare-but-valid free/use ordering is STILL a real vulnerability.",
+                "- A rare-but-valid free/use ordering is STILL a real defect.",
             ]
         elif sink in {'double_free', 'use_after_free'}:
             lines += [
@@ -344,7 +344,7 @@ class ConstraintExtractor:
                 "- This is an object-lifetime violation (a pointer freed twice, or used after "
                 "being freed); it is governed by event ORDERING, not by any data bound — no "
                 "path constraint can make it safe.",
-                f"- CONCLUSION: REAL {sink} vulnerability. See the MEMORY LIFECYCLE STATE MACHINE.",
+                f"- CONCLUSION: REAL {sink} defect. See the MEMORY LIFECYCLE STATE MACHINE.",
             ]
 
         return "\n".join(lines)
@@ -386,9 +386,9 @@ class ConstraintExtractor:
                     lines.append(f"- {param}: [{min_val}, {max_val}]")
             lines.append("")
 
-        # Dangerous patterns
+        # Potential defect patterns
         if evidence.dangerous_patterns:
-            lines.append("### ⚠️ Dangerous Patterns Detected")
+            lines.append("### ⚠️ Potential Defect Patterns Detected")
             for pattern in evidence.dangerous_patterns:
                 lines.append(f"- {pattern}")
             lines.append("")

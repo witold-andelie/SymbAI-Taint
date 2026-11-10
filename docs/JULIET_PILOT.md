@@ -1,6 +1,6 @@
 # NIST Juliet Real-Benchmark Pilot
 
-> Purpose: validate SymbAI-Taint on a **third-party real vulnerability benchmark** (NIST SARD Juliet
+> Purpose: validate SymbAI-Taint on a **third-party real defect benchmark** (NIST SARD Juliet
 > C/C++ 1.3), replacing "100% on 6 hand-written programs" with more credible, larger-scale data whose
 > metrics honestly drop. This is core material for answering "overfitting / too few samples" at a
 > conference or in review.
@@ -80,7 +80,7 @@ cross-border isolation). Scripts: `juliet_harness_llm.py` (type-sinks on symmetr
 - **②: the LLM is a no-op in the clean configuration** — of the 7 negative false positives found by
   standard detection, **it filtered none**; of the 27 true positives, **it killed none**; F1 is unchanged.
   Reason: the LLM's evidence was **GNN types only**, while the goodB2G false positives are "real tainted
-  source → actually-safe sink"; with types alone the LLM cannot tell safe from dangerous sinks and defaults
+  source → actually-safe sink"; with types alone the LLM cannot tell safe from sinks requiring validation and defaults
   to "real."
 - **④: naive stacking hurts** — `OPM_TYPE_SINKS` applied symmetrically also injects sink+argv-source into
   the good variants, fabricating many paths (even CWE78/122 good variants that had zero FP under standard),
@@ -142,7 +142,7 @@ python benchmarks/juliet/juliet_harness_llm_clean.py  # standard + LLM (clean)
    char* parameter ⇒ sink."
 3. **Harden GNN datagen robustness** — `alloca` / some dynamic stack allocations make TYGR's `bityr_annots`
    assertion fail (1/38 missed here). Gracefully skip non-BV locations during datagen.
-4. **Scale up** — full Juliet (flow variants 02–54, inter-procedural/inter-file) + **real CVE binaries** +
+4. **Scale up** — full Juliet (flow variants 02–54, inter-procedural/inter-file) + **real-world defect/fix binary pairs** +
    **baseline comparisons** (run Ghidra/CodeQL etc. on the same set) before drawing general conclusions.
 5. **Fix the evaluation-methodology asymmetry** — the GNN-only 0.833 is the optimistic value of "type-sinks
    on positives only"; report metrics after treating positives and negatives uniformly.

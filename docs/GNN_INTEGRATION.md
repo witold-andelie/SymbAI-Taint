@@ -13,7 +13,7 @@
 - Stage 6 "GNN type recovery" previously relied on a local `gat_model.pt`, but it was a **zero-feature
   shell** whose inference always returned 0 types. The past 100/100/100 was achieved with the **GNN not
   participating**.
-- We reference [TYGR](https://github.com/sefcom/TYGR) (USENIX Security '24, GNN type inference on stripped
+- We reference [TYGR](https://github.com/sefcom/TYGR) (2024 paper, GNN type inference on stripped
   binaries), which **open-sources its pretrained models** (under the repo's `model/` directory) by
   architecture/optimization level: `x64.O0.base.model`, etc.
 - TYGR's training set **TYDA** is also open (an official Dropbox link in the README), but it is **100+ GB,

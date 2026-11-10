@@ -1,6 +1,6 @@
 # Version Compatibility & Environment Reproduction (TYGR ↔ SymbAI-Taint)
 
-> GNN type recovery is based on [TYGR (sefcom/TYGR)](https://github.com/sefcom/TYGR) (USENIX Security '24,
+> GNN type recovery is based on [TYGR (sefcom/TYGR)](https://github.com/sefcom/TYGR) (2024 paper,
 > GNN type inference on stripped binaries). TYGR depends on a **2021-era** angr / PyTorch / PyTorch-Geometric
 > stack. This document records the **version differences**, the **final choice** between two paths, and a
 > complete **environment-reproduction pitfall list**.

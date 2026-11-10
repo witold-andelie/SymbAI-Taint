@@ -29,7 +29,7 @@ static void badVaSink(char * data, ...)
     {
         va_list args;
         va_start(args, data);
-        /* POTENTIAL FLAW: Do not specify the format allowing a possible format string vulnerability */
+        /* POTENTIAL FLAW: Do not specify the format allowing a possible format string defect */
         vfprintf(stdout, data, args);
         va_end(args);
     }
@@ -78,7 +78,7 @@ static void goodG2BVaSink(char * data, ...)
     {
         va_list args;
         va_start(args, data);
-        /* POTENTIAL FLAW: Do not specify the format allowing a possible format string vulnerability */
+        /* POTENTIAL FLAW: Do not specify the format allowing a possible format string defect */
         vfprintf(stdout, data, args);
         va_end(args);
     }
@@ -100,7 +100,7 @@ static void goodB2GVaSink(char * data, ...)
     {
         va_list args;
         va_start(args, data);
-        /* FIX: Specify the format disallowing a format string vulnerability */
+        /* FIX: Specify the format disallowing a format string defect */
         vfprintf(stdout, "%s", args);
         va_end(args);
     }

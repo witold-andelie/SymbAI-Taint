@@ -195,7 +195,7 @@ python benchmarks/juliet/juliet_harness_llm.py        # +GNN+LLM (needs LLM env 
    - **Refine type-driven sinks to reduce FPs**: symmetric application crashes P to 0.522; a stronger
      trigger is needed (in-function evidence of an unbounded write with a tainted index).
    - **Harden GNN datagen robustness**: `alloca` etc. make TYGR's `bityr_annots` assert (1/38 missed).
-   - **Scale up**: full Juliet (flow variants 02–54) + real CVEs + baseline comparisons (Ghidra/CodeQL).
+   - **Scale up**: full Juliet (flow variants 02–54) + real-world defect/fix pairs + baseline comparisons (Ghidra/CodeQL).
    - **Fix evaluation-methodology asymmetry**: the GNN-only 0.833 is the optimistic "type-sinks on positives
      only" value.
 

@@ -119,7 +119,7 @@ def _generate_summary(
     metrics: Dict[str, float]
 ) -> Dict[str, Any]:
     """Generate report summary."""
-    # Count vulnerabilities by type
+    # Count defects by type
     vuln_types = {}
     for trace in taint_trace:
         vuln_type = trace.get('vulnerability_type', 'unknown')
@@ -147,7 +147,7 @@ def _generate_markdown_report(report: AnalysisReport, output_path: str):
         f"- **Binary:** `{report.binary_path}`",
         f"- **Source:** `{report.source_path}`",
         f"- **Total Traces:** {report.summary.get('total_traces', 0)}",
-        f"- **Vulnerable Traces:** {report.summary.get('vulnerable_traces', 0)}",
+        f"- **Defective Traces:** {report.summary.get('vulnerable_traces', 0)}",
         "",
         "## Evaluation Metrics",
         "",
@@ -165,7 +165,7 @@ def _generate_markdown_report(report: AnalysisReport, output_path: str):
     ]
 
     if report.taint_traces:
-        lines.append("| Source | Sink | Vulnerable | Type |")
+        lines.append("| Source | Sink | Defective | Type |")
         lines.append("|--------|------|------------|------|")
         for trace in report.taint_traces:
             source = trace.get('source', 'N/A')
@@ -243,7 +243,7 @@ def get_report_summary(report: AnalysisReport) -> str:
         f"Binary: {report.binary_path}",
         "-" * 50,
         f"Total Traces: {report.summary.get('total_traces', 0)}",
-        f"Vulnerable Traces: {report.summary.get('vulnerable_traces', 0)}",
+        f"Defective Traces: {report.summary.get('vulnerable_traces', 0)}",
         "-" * 50,
         f"Precision: {report.metrics.get('precision', 0):.4f}",
         f"Recall: {report.metrics.get('recall', 0):.4f}",

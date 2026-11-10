@@ -293,7 +293,7 @@ class GNNSinkDetector:
         return func_name in self.known_sinks
 
     def get_sink_type(self, func_name: str) -> str:
-        """Get the type of sink vulnerability."""
+        """Get the type of sink defect."""
         sink_types = {
             'strcpy': 'buffer_overflow',
             'strncpy': 'buffer_overflow',

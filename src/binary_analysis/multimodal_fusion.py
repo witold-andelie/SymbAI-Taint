@@ -2,7 +2,7 @@
 Multi-Modal Fusion Module
 
 Implements ORACAL-style multi-modal fusion for binary analysis.
-Integrates CFG, DFG, and Call Graph for improved vulnerability detection.
+Integrates CFG, DFG, and Call Graph for improved defect detection.
 
 Reference: ORACAL - A Robust and Explainable Multimodal Framework
 """
@@ -131,7 +131,7 @@ class MultiModalFusion:
     Multi-modal fusion for binary analysis.
 
     Combines information from CFG, DFG, and Call Graph
-    for improved vulnerability detection.
+    for improved defect detection.
     """
 
     def __init__(self, config: Optional[FusionConfig] = None):
@@ -307,7 +307,7 @@ class MultiModalFusion:
     def get_vulnerability_score(self, mm_graph: MultiModalGraph,
                                  node_id: int, context: Dict[str, Any]) -> float:
         """
-        Calculate vulnerability score for a node.
+        Calculate defect score for a node.
 
         Args:
             mm_graph: Multi-modal graph
@@ -315,7 +315,7 @@ class MultiModalFusion:
             context: Analysis context
 
         Returns:
-            Vulnerability score
+            Defect score
         """
         score = 0.0
 
@@ -343,7 +343,7 @@ class MultiModalFusion:
             addr = node_info.get('address', 0)
             call_node = mm_graph.call_nodes.get(addr, {})
             callee = call_node.get('callee', '')
-            # Dangerous functions
+            # Functions requiring validation
             dangerous_funcs = {'strcpy', 'sprintf', 'system', 'gets', 'exec'}
             if callee in dangerous_funcs:
                 score += 10.0

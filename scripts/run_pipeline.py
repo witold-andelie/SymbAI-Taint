@@ -67,7 +67,7 @@ def main():
         summary = result.get('summary', {})
         print(f"\nSummary:")
         print(f"  Total traces: {summary.get('total_traces', 0)}")
-        print(f"  Vulnerable traces: {summary.get('vulnerable_traces', 0)}")
+        print(f"  Defective traces: {summary.get('vulnerable_traces', 0)}")
         print(f"  Precision: {summary.get('precision', 0):.4f}")
         print(f"  Recall: {summary.get('recall', 0):.4f}")
         print(f"  F1-Score: {summary.get('f1_score', 0):.4f}")

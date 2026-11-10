@@ -85,19 +85,19 @@ def extract_features_from_path(path_info: Dict[str, Any]) -> torch.Tensor:
     real_sources = {'gets', 'scanf', 'getchar', 'fgets', 'recv', 'read'}
     features[5] = 1.0 if source in real_sources else 0.0
 
-    # Sink is real dangerous function
+    # Sink is a known function requiring validation
     real_sinks = {'strcpy', 'strncpy', 'sprintf', 'system', 'gets'}
     features[6] = 1.0 if sink in real_sinks else 0.0
 
     # Both source and sink are in the same function
     features[7] = 1.0 if source_caller == sink_caller else 0.0
 
-    # Source caller is a vulnerable function name
+    # Source caller matches a named benchmark function
     vuln_funcs = {'vulnerable_strcpy', 'vulnerable_printf', 'vulnerable_system',
                   'vulnerable_stack', 'vulnerable_heap', 'safe_function'}
     features[8] = 1.0 if source_caller in vuln_funcs else 0.0
 
-    # Sink caller is a vulnerable function name
+    # Sink caller matches a named benchmark function
     features[9] = 1.0 if sink_caller in vuln_funcs else 0.0
 
     return features

@@ -30,7 +30,7 @@ class AttentionReportGenerator:
     """
 
     def __init__(self):
-        # Dangerous function patterns
+        # Function requiring validation patterns
         self.dangerous_funcs = {
             'gets', 'strcpy', 'strcat', 'sprintf', 'system',
             'exec', 'malloc', 'free', 'printf'
@@ -84,9 +84,9 @@ class AttentionReportGenerator:
             for func_name, block_count in high_connectivity[:5]:
                 lines.append(f"- {func_name}: {block_count} blocks")
 
-        # Find calls to dangerous functions
+        # Find calls to functions requiring validation
         lines.append("")
-        lines.append("**Dangerous function calls:**")
+        lines.append("**Function calls requiring validation:**")
         for addr, cs in cfg.call_sites.items() if hasattr(cfg, 'call_sites') else []:
             if cs.callee in self.dangerous_funcs:
                 lines.append(f"- {cs.caller} -> {cs.callee} at {hex(addr)}")
@@ -137,7 +137,7 @@ class AttentionReportGenerator:
         pointers = [(v, t, c) for v, t, c in high_confidence if '*' in t or 'pointer' in t.lower()]
         if pointers:
             lines.append("")
-            lines.append("**Pointer variables (potential security impact):**")
+            lines.append("**Pointer variables (potential effects on program correctness):**")
             for var_name, type_name, conf in pointers:
                 lines.append(f"- {var_name}: {type_name}")
 

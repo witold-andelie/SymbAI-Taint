@@ -27,7 +27,7 @@ def _format_arg_is_rodata(proj: Any, block_addr: int, reg: str,
     """Inspect a call block: is the FORMAT register loaded from a .rodata literal?
 
     Returns True (last write to reg is `lea reg, [rip+disp]` into .rodata => literal
-    format), False (reg written by a non-literal mov/etc. => attacker-controlled), or
+    format), False (reg written by a non-literal mov/etc. => input-controlled), or
     None (undeterminable -> caller should treat conservatively as NOT literal).
     """
     try:
@@ -57,7 +57,7 @@ def _format_arg_is_rodata(proj: Any, block_addr: int, reg: str,
 def detect_literal_format_printf(binary_path: str, call_graph: Any) -> Set[Tuple[str, str]]:
     """Find (caller, callee) where EVERY printf/fprintf call uses a .rodata literal format.
 
-    Such calls (e.g. printf("Buffer: %s", x)) are NOT format-string vulnerabilities, so the
+    Such calls (e.g. printf("Buffer: %s", x)) are NOT format-string defects, so the
     taint engine should not report them. Conservative: a function is only listed when every
     one of its printf/fprintf sites is provably a literal; any tainted or undeterminable
     site keeps the sink.
@@ -98,11 +98,11 @@ class TaintSource:
 
 @dataclass
 class TaintSink:
-    """Represents a taint sink (dangerous function)."""
+    """Represents a taint sink (function requiring validation)."""
     function_name: str
     call_site_addr: int
     caller_function: str
-    vulnerable_args: List[int] = field(default_factory=lambda: [0])  # Which args are dangerous
+    vulnerable_args: List[int] = field(default_factory=lambda: [0])  # Which args are potentially invalid
 
 
 @dataclass
@@ -151,12 +151,12 @@ class TaintEngineV2:
         'main',  # main's argv is a source
     })
 
-    # Sink functions and their vulnerable arguments
+    # Sink functions and their defective arguments
     sink_functions: Dict[str, List[int]] = field(default_factory=lambda: {
-        'strcpy': [0, 1],    # Both args vulnerable
-        'strncpy': [0, 1],   # Both args vulnerable
-        'strcat': [0, 1],    # Both args vulnerable
-        'strncat': [0, 1],   # Both args vulnerable
+        'strcpy': [0, 1],    # Both args defective
+        'strncpy': [0, 1],   # Both args defective
+        'strcat': [0, 1],    # Both args defective
+        'strncat': [0, 1],   # Both args defective
         'sprintf': [0, 1],   # Buffer and format string
         'snprintf': [0, 2],  # Buffer and format string
         'printf': [0],       # Format string
@@ -281,10 +281,10 @@ class TaintEngineV2:
                     callee = call_site.callee if hasattr(call_site, 'callee') else ''
                     tracker.track_call(caller, callee, [], addr)
 
-            # Get vulnerabilities
+            # Get defects
             vulns = tracker.get_vulnerabilities()
             if vulns:
-                logger.info(f"  Found {len(vulns)} lifecycle vulnerabilities")
+                logger.info(f"  Found {len(vulns)} lifecycle defects")
                 # Add lifecycle vulns to taint paths
                 for vuln in vulns:
                     # Create a synthetic taint path for lifecycle vulns.
@@ -382,7 +382,7 @@ class TaintEngineV2:
                 if isinstance(sink, str):
                     # Add to sink functions if not already present
                     if sink not in self.sink_functions:
-                        self.sink_functions[sink] = [0]  # Default: first arg is vulnerable
+                        self.sink_functions[sink] = [0]  # Default: first arg is defective
                         logger.debug(f"  Added sink: {sink}")
 
         logger.info(f"  Updated: {len(self.source_functions)} sources, {len(self.sink_functions)} sinks")
@@ -425,7 +425,7 @@ class TaintEngineV2:
 
             # Rule 4: If sink is 'printf' and source is not a format string, it's likely FP
             if sink == 'printf' and source not in {'gets', 'scanf', 'getchar', 'fgets'}:
-                # printf with user input is only dangerous if it's a format string
+                # printf with user input is only potentially invalid if it's a format string
                 logger.debug(f"  Type filter: {source} -> {sink} (not format string source)")
                 continue
 
@@ -437,7 +437,7 @@ class TaintEngineV2:
                 if source_caller == sink_caller:
                     filtered_paths.append(path_info)
                     continue
-                # Allow if sink is a dangerous function
+                # Allow if sink is a function requiring validation
                 dangerous_sinks = {'strcpy', 'strcat', 'sprintf', 'system', 'gets'}
                 if sink in dangerous_sinks:
                     filtered_paths.append(path_info)
@@ -528,7 +528,7 @@ class TaintEngineV2:
             # Also check if caller is a user-defined sink (from LLM)
             # This handles cases like vulnerable_strcpy -> strcpy
             if caller in self.sink_functions and caller not in seen_sinks:
-                # Check if this function calls any dangerous function
+                # Check if this function calls any function requiring validation
                 for inner_addr, inner_cs in call_graph.call_sites.items():
                     if inner_cs.caller == caller and inner_cs.callee in self.sink_functions:
                         key = (caller, caller)
@@ -645,7 +645,7 @@ class TaintEngineV2:
     def _drop_literal_format_sinks(self, binary_path: str, call_graph: Any):
         """Remove printf/fprintf sinks whose format argument is a .rodata literal.
 
-        Such calls (printf("...%s", x)) are not format-string vulnerabilities. The guard
+        Such calls (printf("...%s", x)) are not format-string defects. The guard
         is conservative: a (caller, callee) is dropped only when EVERY one of its call
         sites is provably a literal, so real format-string bugs (printf(tainted)) survive.
         """
@@ -988,7 +988,7 @@ class TaintEngineV2:
         return None
 
     def _get_vulnerability_type(self, sink_name: str) -> str:
-        """Get vulnerability type for a sink function."""
+        """Get defect type for a sink function."""
         vuln_types = {
             'strcpy': 'buffer_overflow',
             'strncpy': 'buffer_overflow',
@@ -1073,7 +1073,7 @@ class TaintEngineV2:
         }
 
     def _count_vulnerability_types(self) -> Dict[str, int]:
-        """Count vulnerabilities by type."""
+        """Count defects by type."""
         counts = defaultdict(int)
         for path in self.taint_paths:
             counts[path.vulnerability_type] += 1

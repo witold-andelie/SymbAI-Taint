@@ -4,7 +4,7 @@ Counterfactual Sample Generation
 Implements VISION-style counterfactual augmentation to reduce false positives.
 Reference: VISION - Robust and Interpretable Code Vulnerability Detection
 
-The idea: If a model can correctly distinguish between a vulnerable pattern
+The idea: If a model can correctly distinguish between a defective pattern
 and its counterfactual (safe) version, it's more likely to be a true positive.
 """
 
@@ -18,7 +18,7 @@ logger = logging.getLogger('OPM.taint_analysis')
 
 @dataclass
 class CounterfactualPair:
-    """A pair of vulnerable and safe code patterns."""
+    """A pair of defective and safe code patterns."""
     vulnerable: Dict[str, Any]
     safe: Dict[str, Any]
     difference: str  # Description of the difference
@@ -39,16 +39,16 @@ class CounterfactualConfig:
 
 class CounterfactualGenerator:
     """
-    Generates counterfactual samples for vulnerability detection.
+    Generates counterfactual samples for defect detection.
 
-    For each potential vulnerability, generates a "safe" version
+    For each potential defect, generates a "safe" version
     and checks if the model can distinguish them.
     """
 
     def __init__(self, config: Optional[CounterfactualConfig] = None):
         self.config = config or CounterfactualConfig()
 
-        # Safe patterns (counterfactuals of dangerous patterns)
+        # Safe patterns (counterfactuals of potential defect patterns)
         self.safe_patterns = {
             'strcpy': ['strncpy', 'strlcpy', 'memcpy with bounds'],
             'strcat': ['strncat', 'strlcat'],
@@ -77,7 +77,7 @@ class CounterfactualGenerator:
         source_caller = taint_path.get('source_caller', '')
         sink_caller = taint_path.get('sink_caller', '')
 
-        # Check for known vulnerable patterns
+        # Check for known defective patterns
         if sink in self.safe_patterns:
             # Generate safe version
             safe_alternatives = self.safe_patterns[sink]
@@ -187,7 +187,7 @@ class CounterfactualGenerator:
                     'pattern': 'printf("%s", user_input)',
                     'has_sanitization': True,
                 },
-                difference='Format string vulnerability in printf'
+                difference='Format string defect in printf'
             )
 
         return None
@@ -271,7 +271,7 @@ class CounterfactualValidator:
         Heuristic check for path validity.
 
         A path is considered valid if:
-        1. It uses a known dangerous function
+        1. It uses a known function requiring validation
         2. The counterfactual would require significant code changes
         """
         sink = path.get('sink', '')

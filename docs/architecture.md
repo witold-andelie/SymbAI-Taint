@@ -2,7 +2,7 @@
 
 ## Overview
 
-The OPM (AI-Enhanced Automated Taint Analysis) system implements a complete pipeline for analyzing stripped binaries to detect security vulnerabilities. The architecture follows the OPM model described in `infra.txt`.
+The OPM (AI-Enhanced Automated Taint Analysis) system implements a complete pipeline for analyzing stripped binaries to detect program defects. The architecture follows the OPM model described in `infra.txt`.
 
 ## Pipeline Stages
 
@@ -43,9 +43,9 @@ SourceCode → GroundTruthExtraction → GroundTruth
 - Expected source functions
 - Expected sink functions
 - Expected taint paths (**scope-aware**: per-function taint tracking)
-- Expected lifecycle vulns: double-free / use-after-free as `(function, vuln_type)`
+- Expected lifecycle defects: double-free / use-after-free as `(function, vuln_type)`
 - Variable types
-- Vulnerable paths
+- Defective paths
 
 > Comments are stripped first (`_strip_comments`) so commented-out calls are not
 > parsed as real calls (which previously fabricated taint into dead functions).
@@ -419,7 +419,7 @@ The headline taint analysis (Stages 10–11) is implemented by `taint_analysis/t
    printf/fprintf call sites; if the format register (RDI/RSI) is `lea reg,[rip+disp]` into
    `.rodata`, the call is a literal format and dropped. Conservative: real `printf(tainted)` kept.
 6. **Dead-code handling** — `_strip_comments` in the extractor; `_filter_unreachable_paths`
-   drops data-flow paths in functions unreachable from `main` (lifecycle vulns exempt).
+   drops data-flow paths in functions unreachable from `main` (lifecycle defects exempt).
 
 > **Note**: `taint_engine_v2` and the printf guard each load angr; with WSL limited to 1.9 GB
 > (no swap), run **one pipeline at a time** to avoid OOM.

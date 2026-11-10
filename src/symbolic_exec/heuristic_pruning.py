@@ -33,7 +33,7 @@ class PathScore:
     cyclomatic_complexity: int = 0
     loop_depth: int = 0
 
-    # Vulnerability likelihood
+    # Defect likelihood
     vuln_score: float = 0.0
 
     def total_score(self) -> float:
@@ -46,7 +46,7 @@ class PathScore:
         elif self.has_source or self.has_sink:
             score += 50.0
 
-        # Type mismatch indicates potential vulnerability
+        # Type mismatch indicates potential defect
         if self.has_type_mismatch:
             score += 30.0
 
@@ -56,10 +56,10 @@ class PathScore:
         # Taint relevance
         score += self.taint_relevance * 40.0
 
-        # Vulnerability score
+        # Defect score
         score += self.vuln_score * 60.0
 
-        # Penalize very long paths (less likely to be vulnerable)
+        # Penalize very long paths (less likely to be defective)
         if self.length > 100:
             score -= (self.length - 100) * 0.1
 
@@ -137,7 +137,7 @@ class HeuristicPathPruner:
         if self.strategy.use_loop_heuristic:
             score = self._apply_loop_heuristic(score, path, context)
 
-        # Vulnerability likelihood
+        # Defect likelihood
         score.vuln_score = self._calculate_vulnerability_score(path, context)
 
         return score
@@ -225,10 +225,10 @@ class HeuristicPathPruner:
 
     def _calculate_vulnerability_score(self, path: Dict[str, Any],
                                         context: Dict[str, Any]) -> float:
-        """Calculate vulnerability likelihood score."""
+        """Calculate defect likelihood score."""
         score = 0.0
 
-        # Check for dangerous patterns
+        # Check for potential defect patterns
         dangerous_funcs = {
             'strcpy', 'strcat', 'sprintf', 'gets',
             'system', 'exec', 'printf'
@@ -328,7 +328,7 @@ class AdaptivePathPruner(HeuristicPathPruner):
         Update pruning strategy based on results.
 
         Args:
-            found_vulnerability: Whether a vulnerability was found
+            found_vulnerability: Whether a defect was found
             path_score: Score of the path that was analyzed
         """
         if found_vulnerability:

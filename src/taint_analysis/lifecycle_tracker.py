@@ -7,7 +7,7 @@ Implements state machine primitives for tracking object lifecycle:
 - Deallocation (free)
 - Use-After-Free detection
 
-This helps identify real vulnerability patterns even when they're rare in business logic.
+This helps identify real defect patterns even when they're rare in business logic.
 """
 
 import logging
@@ -64,7 +64,7 @@ class LifecycleRecord:
 
 @dataclass
 class LifecycleVulnerability:
-    """A vulnerability detected by lifecycle tracking."""
+    """A defect detected by lifecycle tracking."""
     vuln_type: str                  # 'use_after_free', 'double_free', 'tainted_free'
     pointer: str
     description: str
@@ -88,7 +88,7 @@ class LifecycleTracker:
         # Taint input functions
         self.taint_funcs = {'gets', 'scanf', 'fgets', 'read', 'recv', 'getchar'}
 
-        # Detected vulnerabilities
+        # Detected defects
         self.vulnerabilities: List[LifecycleVulnerability] = []
 
     def track_call(self, caller: str, callee: str, args: List[Any], address: int):
@@ -229,7 +229,7 @@ class LifecycleTracker:
         pass  # Skip generic use tracking - only detect explicit UAF patterns
 
     def get_vulnerabilities(self) -> List[LifecycleVulnerability]:
-        """Get all detected vulnerabilities."""
+        """Get all detected defects."""
         return self.vulnerabilities
 
     def format_for_llm(self) -> str:
@@ -244,10 +244,10 @@ class LifecycleTracker:
         lines.append("")
 
         if not self.vulnerabilities:
-            lines.append("No lifecycle vulnerabilities detected.")
+            lines.append("No lifecycle defects detected.")
             return "\n".join(lines)
 
-        lines.append("### ⚠️ Lifecycle Vulnerabilities Detected")
+        lines.append("### ⚠️ Lifecycle Defects Detected")
         lines.append("")
 
         for vuln in self.vulnerabilities:
@@ -268,7 +268,7 @@ class LifecycleTracker:
 
 class TaintedFreeDetector:
     """
-    Detects tainted-free vulnerabilities:
+    Detects tainted-free defects:
     When taint data controls the address being freed.
     """
 
@@ -284,7 +284,7 @@ class TaintedFreeDetector:
             taint_state: Current taint state
 
         Returns:
-            Vulnerability info if detected
+            Defect info if detected
         """
         # Check if the pointer is tainted
         if self._is_tainted(free_arg, taint_state):

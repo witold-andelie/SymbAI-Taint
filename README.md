@@ -1,7 +1,11 @@
 # SymbAI-Taint: AI-Enhanced Automated Taint Analysis for Stripped Binaries
 
-> A neuro-symbolic vulnerability-discovery pipeline that combines **GNN-based type recovery**,
+> A neuro-symbolic program-analysis pipeline that combines **GNN-based type recovery**,
 > **symbolic-execution hard evidence**, and **LLM adjudication** for taint analysis on stripped binaries.
+
+> **Research scope:** Academic research on binary program semantics, neural type recovery,
+> symbolic execution, data-flow specifications, and program correctness. The implementation
+> and benchmark terminology describe the concrete properties being measured.
 
 ## ✨ Latest Progress (v13: GNN truly integrated + real-benchmark evaluation)
 
@@ -43,7 +47,7 @@
 ```
 Source / Binary
  1  Compile & strip      gcc -g  →  keep -g copy (for type recovery) + stripped copy (for analysis)
- 2  Ground Truth         extract expected vulnerabilities from source (scope-aware; evaluation only)
+ 2  Ground Truth         extract expected defects from source (scope-aware; evaluation only)
  3  Code lifting         angr  →  VEX IR
  4  CFG recovery         angr CFGFast
  5  DFG + call graph     data-flow + function calls
@@ -180,7 +184,7 @@ and the GNN's value is quantified (LLM endpoint: FreeModel `gpt-5.4-mini`; the M
 > name matching misses). **The LLM precision gain did not materialize in this configuration (a negative
 > result)**: in ② the LLM is a no-op, and ④ naive stacking hurts precision. The root cause is that the
 > batch ablation fed the LLM only GNN-type evidence, **without the angr symbolic constraints** (the hard
-> evidence needed to tell "safe" from "dangerous" sinks). **We report the negative result openly**:
+> evidence needed to tell "safe" from "potentially invalid" sinks). **We report the negative result openly**:
 > a full neuro-symbolic + LLM evaluation, type-sink precision refinement, and scaling up are explicit next
 > steps (see [JULIET_PILOT.md](docs/JULIET_PILOT.md) §7 "Open Problems").
 
@@ -192,7 +196,7 @@ and the GNN's value is quantified (LLM endpoint: FreeModel `gpt-5.4-mini`; the M
    `max_tokens`; at 1024 the visible JSON is truncated and adjudication silently defaults to 0.5. Fixed by
    raising to 4096 + tolerant parsing + putting the decision field first.
 3. **Object-lifecycle state machine** — models double-free / use-after-free (which a flat source→sink
-   model cannot express) and aligns them on both GT and analyzer sides by `(function, vulnerability type)`.
+   model cannot express) and aligns them on both GT and analyzer sides by `(function, defect type)`.
 4. **printf format-string .rodata guard** — disassembles printf/fprintf call sites with angr and checks
    whether the format-argument register points to a `.rodata` literal; conservatively downgrades only when
    fully proven literal, always keeping real `printf(tainted)`.
@@ -223,7 +227,7 @@ and the GNN's value is quantified (LLM endpoint: FreeModel `gpt-5.4-mini`; the M
    trigger is needed (evidence of an unbounded write with a tainted index inside the function).
 3. **Harden GNN datagen robustness** — `alloca` and some dynamic stack allocations make TYGR's
    `bityr_annots` assertion fail (1/38 missed here).
-4. **Scale up** — full Juliet (flow variants 02–54, inter-procedural/inter-file) + real CVE binaries +
+4. **Scale up** — full Juliet (flow variants 02–54, inter-procedural/inter-file) + real-world defect/fix binary pairs +
    baseline comparisons (e.g., Ghidra/CodeQL).
 5. **Fix the evaluation-methodology asymmetry** — the GNN-only 0.833 is optimistic ("type-sinks on
    positives only").
@@ -241,7 +245,7 @@ The GNN type-recovery component is based on and references **[TYGR (sefcom/TYGR)
 > TYGR code; obtain it yourself from the official repository (see [Quick Start §3](#3-configure-tygr-gnn-type-recovery-optional-external-dependency)).
 > We reference it only in an academic sense.
 
-Other referenced work: DIRTY, ORACAL, VISION (binary semantics / vulnerability detection).
+Other referenced work: DIRTY, ORACAL, VISION (binary semantics / defect detection).
 
 ### License
 This project's own code is released under the **Apache License 2.0** (see `LICENSE`). Note that the license

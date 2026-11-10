@@ -272,8 +272,8 @@ Binary Info:
 
 Based on the function names and call patterns, identify:
 1. Which functions are likely taint SOURCES (receive user input)
-2. Which functions are likely taint SINKS (dangerous operations)
-3. What specific arguments are tainted/vulnerable
+2. Which functions are likely taint SINKS (operations requiring validation)
+3. Which specific arguments carry input-derived values or require validation
 
 Return JSON format:
 {{
@@ -283,7 +283,7 @@ Return JSON format:
   "sink_details": {{"func3": {{"vulnerable_args": [0, 1]}}}}
 }}"""
 
-        response = self.generate(prompt, "You are a binary security analysis expert. Analyze the function names and identify potential security-relevant functions.")
+        response = self.generate(prompt, "You are a researcher studying binary program analysis. Analyze the function names and identify functions relevant to data-flow analysis.")
         return self._parse_json_response(response)
 
     def guide_propagation(self, current_state: Dict[str, Any]) -> Dict[str, Any]:
@@ -324,7 +324,7 @@ Provide propagation guidance in JSON format."""
         vuln_type = path_info.get('vulnerability_type', 'unknown')
 
         # Shorter system prompt
-        system_prompt = "You are a binary security expert. Cross-function taint flows via parameters are REAL. Reply JSON only."
+        system_prompt = "You are a researcher studying binary program analysis. Cross-function taint flows via parameters are REAL. Reply JSON only."
 
         # Build concise prompt
         prompt = f"Taint: {source}({source_caller}) -> {sink}({sink_caller})\n"
@@ -375,12 +375,12 @@ Provide propagation guidance in JSON format."""
         vuln_type = path_info.get('vulnerability_type', 'unknown')
         is_same_function = path_info.get('is_same_function', False)
 
-        system_prompt = """You are a binary security expert performing taint-analysis triage. \
+        system_prompt = """You are a researcher studying binary program analysis and assessing data-flow paths. \
 Think step-by-step and weigh SYMBOLIC and LIFECYCLE evidence ABOVE surface-level function names.
 
 CORE RULES:
 - Cross-function taint via parameters (RDI, RSI, RDX, stack) is COMMON and REAL.
-- gets->strcpy, gets->strncpy, gets->free, argv->system are TYPICAL vulnerability patterns.
+- gets->strcpy, gets->strncpy, gets->free, argv->system are TYPICAL defect patterns.
 - NEVER reject just because the functions differ - only reject if data flow is LOGICALLY severed
   (value overwritten, sanitized, or replaced by a constant).
 - Do NOT trust a function name to imply safety. strncpy / snprintf / memcpy are SAFE ONLY IF the
@@ -394,7 +394,7 @@ OBJECT-LIFECYCLE STATE MACHINE (track the POINTER's lifetime, not just the data 
     -> Deallocation (free)
     -> Use-After-Free / Double-Free
 If taint data controls the address passed to free(), or a freed pointer is used or freed again,
-this is a REAL vulnerability EVEN IF the sequence is rare in normal business logic. Rarity is NOT
+this is a REAL defect EVEN IF the sequence is rare in normal business logic. Rarity is NOT
 evidence of safety.
 
 Reply with JSON ONLY. Put the DECISION FIELDS FIRST so they are never lost, then brief
@@ -406,7 +406,7 @@ Reply with JSON ONLY. Put the DECISION FIELDS FIRST so they are never lost, then
         lifecycle_text = lifecycle_analysis[:1200] if lifecycle_analysis else "(no lifecycle events recorded)"
 
         prompt = f"""Analyze taint path: {source}({source_caller}) -> {sink}({sink_caller})
-Vulnerability type: {vuln_type}
+Defect type: {vuln_type}
 Call chain: {call_chain}
 Same function: {is_same_function}
 
@@ -422,7 +422,7 @@ Step 2 (Symbolic): Do the constraints/ranges show the size/length/command argume
   UNCONSTRAINED? Treat an unconstrained size as proof of overflow.
 Step 3 (Lifecycle): Per the state machine, is there Use-After-Free, Double-Free, or tainted-free?
   A rare-but-valid free/use ordering still counts.
-Step 4 (Semantic): Combine the above - is this a real, exploitable flow?
+Step 4 (Semantic): Combine the above - is this a real, reproducible flow?
 
 Output `is_feasible` and `score` FIRST (score = final confidence 0.0-1.0, >=0.3 means report)."""
 

@@ -1,5 +1,5 @@
 /**
- * Test program with known vulnerabilities
+ * Test program with known defects
  * Used for evaluating the OPM taint analysis system
  */
 
@@ -8,32 +8,32 @@
 #include <string.h>
 #include <unistd.h>
 
-// Vulnerable function 1: Buffer overflow via strcpy
+// Defective function 1: Buffer overflow via strcpy
 void vulnerable_strcpy(const char *input) {
     char buffer[64];
     strcpy(buffer, input);  // No bounds checking
     printf("Buffer: %s\n", buffer);
 }
 
-// Vulnerable function 2: Format string vulnerability
+// Defective function 2: Format string defect
 void vulnerable_printf(const char *input) {
     printf(input);  // User-controlled format string
 }
 
-// Vulnerable function 3: Command injection
+// Defective function 3: Command injection
 void vulnerable_system(const char *input) {
     char command[256];
     sprintf(command, "echo %s", input);
     system(command);  // User-controlled command
 }
 
-// Vulnerable function 4: Stack buffer overflow
+// Defective function 4: Stack buffer overflow
 void vulnerable_stack(const char *input) {
     char buffer[32];
-    gets(buffer);  // Dangerous function
+    gets(buffer);  // Function requiring validation
 }
 
-// Vulnerable function 5: Heap buffer overflow
+// Defective function 5: Heap buffer overflow
 void vulnerable_heap(const char *input) {
     char *buffer = malloc(64);
     if (buffer) {
@@ -75,7 +75,7 @@ int main(int argc, char *argv[]) {
     // Taint flow 5: input -> heap buffer overflow
     vulnerable_heap(user_input);
 
-    // Safe function (no vulnerability)
+    // Safe function (no defect)
     safe_function(user_input);
 
     return 0;

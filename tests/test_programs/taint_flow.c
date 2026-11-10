@@ -45,7 +45,7 @@ void conditional_flow(const char *input, int flag) {
     char buffer[64];
 
     if (flag) {
-        strcpy(buffer, input);  // Vulnerable path
+        strcpy(buffer, input);  // Defective path
     } else {
         strncpy(buffer, input, sizeof(buffer) - 1);
         buffer[sizeof(buffer) - 1] = '\0';

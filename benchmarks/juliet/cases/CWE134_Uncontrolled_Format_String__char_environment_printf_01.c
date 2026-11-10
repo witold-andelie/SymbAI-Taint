@@ -47,7 +47,7 @@ void CWE134_Uncontrolled_Format_String__char_environment_printf_01_bad()
             strncat(data+dataLen, environment, 100-dataLen-1);
         }
     }
-    /* POTENTIAL FLAW: Do not specify the format allowing a possible format string vulnerability */
+    /* POTENTIAL FLAW: Do not specify the format allowing a possible format string defect */
     printf(data);
 }
 
@@ -63,7 +63,7 @@ static void goodG2B()
     data = dataBuffer;
     /* FIX: Use a fixed string that does not contain a format specifier */
     strcpy(data, "fixedstringtest");
-    /* POTENTIAL FLAW: Do not specify the format allowing a possible format string vulnerability */
+    /* POTENTIAL FLAW: Do not specify the format allowing a possible format string defect */
     printf(data);
 }
 
@@ -84,7 +84,7 @@ static void goodB2G()
             strncat(data+dataLen, environment, 100-dataLen-1);
         }
     }
-    /* FIX: Specify the format disallowing a format string vulnerability */
+    /* FIX: Specify the format disallowing a format string defect */
     printf("%s\n", data);
 }
 

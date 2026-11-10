@@ -51,7 +51,7 @@ Evaluation, ReportGeneration.
    temperature jitter.
 8. **Object-lifecycle state-machine scoring** (`taint_analysis/lifecycle_tracker.py`,
    `extractor.identify_lifecycle_vulns`): real UAF detection (use after free); double-free/UAF aligned on
-   both GT and analyzer sides by `(function, vulnerability type)`, so memory-safety bugs a flat data-flow
+   both GT and analyzer sides by `(function, defect type)`, so memory-safety bugs a flat data-flow
    model cannot express count as TP.
 9. **printf format-string .rodata guard** (`taint_engine_v2.detect_literal_format_printf`): disassemble
    printf/fprintf call blocks with angr and check whether the format-argument register (printf→RDI,
@@ -130,7 +130,7 @@ Evaluation, ReportGeneration.
 
 ### Stage 11: Source-Sink Checking (with LLM)
 - **Files**: `pipeline.py::_stage_source_sink_checking()` (`_build_symbolic_evidence()` builds GNN attention
-  report + dangerous calls + GNN type information + angr path constraints), then
+  report + calls requiring validation + GNN type information + angr path constraints), then
   `orchestrator/llm_client.py::analyze_taint_path_cot()` (CoT + soft threshold). → TaintTrace.
 
 ### Stage 12: Evaluation
@@ -214,7 +214,7 @@ pipeline.py
 └── _stage_source_sink_checking()
     ├── _build_symbolic_evidence()
     │   ├── attention_report.py
-    │   ├── call_graph (dangerous functions)
+    │   ├── call_graph (functions requiring validation)
     │   ├── type_recovery_output (GNN types)
     │   └── symbolic_results (angr path constraints)
     └── llm_client.py::analyze_taint_path_cot() → generate(prompt, system_prompt)
@@ -245,7 +245,7 @@ TaintState (taint_paths)
     ▼
 Build Symbolic Evidence
     ├── GNN Attention Report
-    ├── Call Graph (dangerous functions)
+    ├── Call Graph (functions requiring validation)
     ├── Type Information (GNN)
     └── Angr Path Constraints
     ▼
