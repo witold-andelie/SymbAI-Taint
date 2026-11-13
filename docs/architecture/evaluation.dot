@@ -1,0 +1,40 @@
+digraph SymbAIEvaluation {
+  graph [rankdir=TB, bgcolor="white", pad="0.35", nodesep="0.45", ranksep="0.6",
+         fontname="Arial", fontsize=18, labelloc=t,
+         label="SymbAI-Taint | Offline evaluation\nOPM detail - labels never enter runtime selection",
+         protocol="symbai-selective-analysis-pilot-v1", view="evaluation", refines="ResultsEvaluating"];
+  node [kind="object", shape=box, style="filled", fillcolor="#EFF6FF", color="#315A85",
+        fontname="Arial", fontsize=12, margin="0.16,0.10"];
+  edge [fontname="Arial", fontsize=9, color="#526477", arrowsize=0.75];
+
+  RunBundle [label="Run Bundle", interface="input"];
+  QueryManifest [label="Query Manifest", interface="input"];
+  FrozenProtocol [label="Frozen Protocol", interface="input"];
+  GoldLabels [label="Gold Labels\noffline evaluation only", data_role="evaluation_only", interface="input", fillcolor="#FFF1E5", color="#B76B2E"];
+  MatchedRuns [label="Matched Runs\nsame queries + comparable regime/budget"];
+  QueryMetrics [label="Query Metrics\nconclusions + unknowns + errors"];
+  CostMetrics [label="Cost Metrics\ntotal + amortized + selection overhead"];
+  EvaluationReport [label="Evaluation Report", interface="output"];
+
+  RunMatching [kind="process", shape=ellipse, label="Run and Query\nMatching", role="evaluating", zone="evaluation", fillcolor="#FFF1E5", color="#B76B2E"];
+  OutcomeEvaluating [kind="process", shape=ellipse, label="Query Outcome\nEvaluating", role="evaluating", zone="evaluation", fillcolor="#FFF1E5", color="#B76B2E"];
+  CostSummarizing [kind="process", shape=ellipse, label="Cost\nSummarizing", role="evaluating", zone="evaluation", fillcolor="#FFF1E5", color="#B76B2E"];
+  ReportProducing [kind="process", shape=ellipse, label="Paired Report\nProducing", role="evaluating", zone="evaluation", fillcolor="#FFF1E5", color="#B76B2E"];
+
+  RunBundle -> RunMatching [relation="instrument", label="requires", arrowhead=odot];
+  QueryManifest -> RunMatching [relation="instrument", label="requires", arrowhead=odot];
+  FrozenProtocol -> RunMatching [relation="instrument", label="requires", arrowhead=odot];
+  RunMatching -> MatchedRuns [relation="result", label="yields", arrowhead=onormal];
+
+  MatchedRuns -> OutcomeEvaluating [relation="instrument", label="requires", arrowhead=odot];
+  GoldLabels -> OutcomeEvaluating [relation="instrument", label="requires", arrowhead=odot];
+  OutcomeEvaluating -> QueryMetrics [relation="result", label="yields", arrowhead=onormal];
+  MatchedRuns -> CostSummarizing [relation="instrument", label="requires", arrowhead=odot];
+  FrozenProtocol -> CostSummarizing [relation="instrument", label="requires", arrowhead=odot];
+  CostSummarizing -> CostMetrics [relation="result", label="yields", arrowhead=onormal];
+
+  QueryMetrics -> ReportProducing [relation="instrument", label="requires", arrowhead=odot];
+  CostMetrics -> ReportProducing [relation="instrument", label="requires", arrowhead=odot];
+  FrozenProtocol -> ReportProducing [relation="instrument", label="requires", arrowhead=odot];
+  ReportProducing -> EvaluationReport [relation="result", label="yields", arrowhead=onormal];
+}

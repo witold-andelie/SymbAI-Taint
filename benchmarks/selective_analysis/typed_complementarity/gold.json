@@ -1,0 +1,9 @@
+{
+  "schema": "symbai.gold.v1",
+  "panel": "v21_three_authored_compiled_functions_one_binary",
+  "labels": [
+    {"query_id": "typed_scalar_span", "expected": "excluded_within_scope"},
+    {"query_id": "typed_readonly_table", "expected": "excluded_within_scope"},
+    {"query_id": "typed_readonly_table_outside", "expected": "violation"}
+  ]
+}

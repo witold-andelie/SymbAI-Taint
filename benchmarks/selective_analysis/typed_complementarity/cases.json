@@ -1,0 +1,8 @@
+{
+  "schema": "symbai.typed_complementarity_specs.v1",
+  "cases": [
+    {"case_id": "typed_scalar_span", "function_symbol": "typed_scalar_span", "object_symbol": "scalar_output", "capacity": 1024, "input": {"register": "rdi", "minimum": 0, "maximum": 1023}},
+    {"case_id": "typed_readonly_table", "function_symbol": "typed_readonly_table", "object_symbol": "table_output", "capacity": 8, "input": {"register": "rdi", "minimum": 0, "maximum": 15}},
+    {"case_id": "typed_readonly_table_outside", "function_symbol": "typed_readonly_table_outside", "object_symbol": "outside_output", "capacity": 8, "input": {"register": "rdi", "minimum": 0, "maximum": 15}}
+  ]
+}

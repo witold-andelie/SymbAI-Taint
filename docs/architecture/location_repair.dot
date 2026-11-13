@@ -1,0 +1,59 @@
+digraph LocationRepair {
+  graph [rankdir=LR, labelloc=t, label="V22.1 Same-ELF DWARF4 Location Compatibility Repair\nExplicit old/new entry API; old controls retained; no neural-benefit claim",
+         protocol="symbai-selective-analysis-pilot-v1", view="location_repair"];
+  node [kind=object, shape=box, style=filled, fillcolor="#EFF6FF", color="#315A85", fontname="Arial", fontsize=11];
+  edge [fontname="Arial", fontsize=9, color="#526477", arrowsize=0.7];
+  Archive [label="Anchored V21 Sources, ELF and Three Queries"];
+  Repair [label="External DWARF4 CU/Selected-Base Adapter\nknown four/six-field layouts; original expressions"];
+  API [label="Observed Pyelftools Version and Validated Entry Layout"];
+  Sources [label="Verified Original TYGR Files and Archived Worker"];
+  Model [label="Pinned CPU Model\nunchanged weights and preprocessing"];
+  Budget [label="One Cold 120 s Parent-Owned Budget"];
+  Offline [label="Offline ELF Location Projection\nseven variables / eight relative list entries"];
+  Native [label="Adapted Native Graphs, Groups and Tensors"];
+  Trace [label="Persisted Runtime Range Trace and Detailed Location Errors"];
+  Approved [label="Saved-Domain Guard-Passed Actual CPU Batch"];
+  Failure [label="Failed or Partial Acquisition\nraw artifacts retained"];
+  Logits [label="Genuine Adapted Whole-Variable Logits\nexplicitly distinct from original pipeline"];
+  Historical [label="Historical V21 Output Coverage and Controls\nnot new timed property trials"];
+  Result [label="Same-Three-Query Coverage and Paid Cost\nno event mapping, accuracy or benefit inference"];
+
+  Projecting [kind=process, shape=ellipse, role="location_repair_projecting", zone="runtime", label="Retained ELF Ranges\nProjecting", fillcolor="#EAF5EE"];
+  APIChecking [kind=process, shape=ellipse, role="location_api_checking", zone="runtime", label="Actual Entry API\nChecking", fillcolor="#EAF5EE"];
+  Preparing [kind=process, shape=ellipse, role="location_repair_preparing", zone="runtime", label="Repaired Native Locations\nPreparing", fillcolor="#EAF5EE"];
+  Guarding [kind=process, shape=ellipse, role="location_repair_guarding", zone="runtime", label="Actual Saved Input Domains\nGuarding", fillcolor="#EAF5EE"];
+  Forwarding [kind=process, shape=ellipse, role="location_repair_forwarding", zone="runtime", label="Frozen Unlabeled CPU Model\nForwarding", fillcolor="#EAF5EE"];
+  Evaluating [kind=process, shape=ellipse, role="evaluating", zone="evaluation", label="Trace, Identity and Coverage\nEvaluating", fillcolor="#FFF1E5"];
+
+  Archive -> Projecting [relation=instrument, label=requires, arrowhead=odot];
+  Repair -> Projecting [relation=instrument, label=requires, arrowhead=odot];
+  Projecting -> Offline [relation=result, label=yields, arrowhead=onormal];
+  Sources -> APIChecking [relation=instrument, label=requires, arrowhead=odot];
+  Repair -> APIChecking [relation=instrument, label=requires, arrowhead=odot];
+  APIChecking -> API [relation=result, label=yields, arrowhead=onormal];
+  APIChecking -> Failure [relation=result, label=yields, arrowhead=onormal];
+  API -> Preparing [relation=instrument, label=requires, arrowhead=odot];
+  Archive -> Preparing [relation=instrument, label=requires, arrowhead=odot];
+  Repair -> Preparing [relation=instrument, label=requires, arrowhead=odot];
+  Sources -> Preparing [relation=instrument, label=requires, arrowhead=odot];
+  Budget -> Preparing [relation=instrument, label=requires, arrowhead=odot];
+  Preparing -> Native [relation=result, label=yields, arrowhead=onormal];
+  Preparing -> Trace [relation=result, label=yields, arrowhead=onormal];
+  Preparing -> Failure [relation=result, label=yields, arrowhead=onormal];
+  Native -> Guarding [relation=instrument, label=requires, arrowhead=odot];
+  Model -> Guarding [relation=instrument, label=requires, arrowhead=odot];
+  Guarding -> Approved [relation=result, label=yields, arrowhead=onormal];
+  Guarding -> Failure [relation=result, label=yields, arrowhead=onormal];
+  Approved -> Forwarding [relation=instrument, label=requires, arrowhead=odot];
+  Model -> Forwarding [relation=instrument, label=requires, arrowhead=odot];
+  Budget -> Forwarding [relation=instrument, label=requires, arrowhead=odot];
+  Forwarding -> Logits [relation=result, label=yields, arrowhead=onormal];
+  Forwarding -> Failure [relation=result, label=yields, arrowhead=onormal];
+  Logits -> Evaluating [relation=instrument, label=requires, arrowhead=odot];
+  Offline -> Evaluating [relation=instrument, label=requires, arrowhead=odot];
+  Trace -> Evaluating [relation=instrument, label=requires, arrowhead=odot];
+  Historical -> Evaluating [relation=instrument, label=requires, arrowhead=odot];
+  API -> Evaluating [relation=instrument, label=requires, arrowhead=odot];
+  Failure -> Evaluating [relation=instrument, label=requires, arrowhead=odot];
+  Evaluating -> Result [relation=result, label=yields, arrowhead=onormal];
+}

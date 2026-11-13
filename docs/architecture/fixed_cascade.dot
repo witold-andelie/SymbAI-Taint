@@ -1,0 +1,64 @@
+digraph FixedCascade {
+  graph [rankdir=TB, bgcolor="white", pad="0.3", nodesep="0.35", ranksep="0.5",
+         fontname="Arial", fontsize=18, labelloc=t,
+         label="SymbAI-Taint | Development v15 fixed complete baseline\nInterval -> finite readonly -> full checking; parent persistence clock; query-matched comparisons",
+         protocol="symbai-selective-analysis-pilot-v1", view="fixed_cascade"];
+  node [kind=object, shape=box, style=filled, fillcolor="#EFF6FF", color="#315A85", fontname="Arial", fontsize=11];
+  edge [fontname="Arial", fontsize=9, color="#526477", arrowsize=0.7];
+  Retained [label="Retained V14 Inputs Only\n3 known ELF/query contracts; no old results"];
+  Queries [label="Copied Hashed Query Contracts\nunchanged program identities"];
+  Gold [label="Copied Offline Expected Outcomes\nparsed only after method/reference workers", data_role="evaluation_only"];
+  Schedule [label="Predeclared Rotated Query / Alternating Method Schedule\n3 repetitions; 18 method/query trials"];
+  Catalog [label="Two Fixed Methods\nfull only / interval -> finite -> full"];
+  Budget [label="Shared Parent Query Budget\n30 s; no per-attempt restart"];
+  Request [label="Label-Free Fresh Query Request", consumable=true];
+  Metadata [label="Observed Worker Runtime Versions\nlookup overhead paid"];
+  WorkerPayload [label="Complete Worker Evidence Payload\nall attempts, failures and original worker result"];
+  Persisted [label="Persisted Detailed Trial Bytes and SHA-256\nserialization included before clock closure"];
+  ProcessStatus [label="Process Exit / Timeout / Cleanup Record"];
+  Receipt [label="Parent-Authoritative Status and Cost Receipt\nlate evidence retained; late result unknown"];
+  Rows [label="18 Finalized Method Records\nthree unique queries; failures retained"];
+  Ready [label="All Method Workers Finished\nreadiness only"];
+  References [label="3 Fresh Separate Label-Free References\nno imported previous conclusions"];
+  Report [label="Coverage Vectors and Query-Matched Cost Pairs\nno equal-count shortcut or neural claim"];
+
+  Snapshotting [kind=process, shape=ellipse, label="Immutable Inputs\nSnapshotting", role="cascade_snapshotting", zone="runtime", fillcolor="#EAF5EE"];
+  Dispatching [kind=process, shape=ellipse, label="Fixed Scheduled Requests\nDispatching", role="cascade_dispatching", zone="runtime", fillcolor="#EAF5EE"];
+  Executing [kind=process, shape=ellipse, label="Fresh Fixed Method and Validation\nExecuting", role="cascade_executing", zone="runtime", fillcolor="#EAF5EE"];
+  Persisting [kind=process, shape=ellipse, label="Complete Trial Evidence\nPersisting", role="cascade_persisting", zone="runtime", fillcolor="#EAF5EE"];
+  Finalizing [kind=process, shape=ellipse, label="Parent Clock and Availability\nFinalizing", role="cascade_finalizing", zone="runtime", fillcolor="#EAF5EE"];
+  Referencing [kind=process, shape=ellipse, label="Fresh Modeled Input Domains\nReferencing", role="cascade_referencing", zone="runtime", fillcolor="#EAF5EE"];
+  Evaluating [kind=process, shape=ellipse, label="Same-Identity Coverage and Costs\nEvaluating", role="evaluating", zone="evaluation", fillcolor="#FFF1E5"];
+
+  Retained -> Snapshotting [relation=instrument, label=requires, arrowhead=odot];
+  Snapshotting -> Queries [relation=result, label=yields, arrowhead=onormal];
+  Snapshotting -> Gold [relation=result, label=yields, arrowhead=onormal];
+  Queries -> Dispatching [relation=instrument, label=requires, arrowhead=odot];
+  Schedule -> Dispatching [relation=instrument, label=requires, arrowhead=odot];
+  Catalog -> Dispatching [relation=instrument, label=requires, arrowhead=odot];
+  Dispatching -> Request [relation=result, label=yields, arrowhead=onormal];
+  Request -> Executing [relation=consumption, label=consumes, arrowhead=normal];
+  Queries -> Executing [relation=instrument, label=requires, arrowhead=odot];
+  Budget -> Executing [relation=instrument, label=requires, arrowhead=odot];
+  Executing -> Metadata [relation=result, label=yields, arrowhead=onormal];
+  Executing -> WorkerPayload [relation=result, label=yields, arrowhead=onormal];
+  Executing -> ProcessStatus [relation=result, label=yields, arrowhead=onormal];
+  WorkerPayload -> Persisting [relation=instrument, label=requires, arrowhead=odot];
+  Metadata -> Persisting [relation=instrument, label=requires, arrowhead=odot];
+  Persisting -> Persisted [relation=result, label=yields, arrowhead=onormal];
+  Persisted -> Finalizing [relation=instrument, label=requires, arrowhead=odot];
+  ProcessStatus -> Finalizing [relation=instrument, label=requires, arrowhead=odot];
+  Budget -> Finalizing [relation=instrument, label=requires, arrowhead=odot];
+  Finalizing -> Receipt [relation=result, label=yields, arrowhead=onormal];
+  Finalizing -> Rows [relation=result, label=yields, arrowhead=onormal];
+  Finalizing -> Ready [relation=result, label=yields, arrowhead=onormal];
+  Ready -> Referencing [relation=instrument, label=requires, arrowhead=odot];
+  Queries -> Referencing [relation=instrument, label=requires, arrowhead=odot];
+  Budget -> Referencing [relation=instrument, label=requires, arrowhead=odot];
+  Referencing -> References [relation=result, label=yields, arrowhead=onormal];
+  Rows -> Evaluating [relation=instrument, label=requires, arrowhead=odot];
+  References -> Evaluating [relation=instrument, label=requires, arrowhead=odot];
+  Receipt -> Evaluating [relation=instrument, label=requires, arrowhead=odot];
+  Gold -> Evaluating [relation=instrument, label=requires, arrowhead=odot];
+  Evaluating -> Report [relation=result, label=yields, arrowhead=onormal];
+}

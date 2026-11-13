@@ -1,0 +1,61 @@
+digraph SymbAISystem {
+  graph [rankdir=TB, bgcolor="white", pad="0.35", nodesep="0.4", ranksep="0.6",
+         fontname="Arial", fontsize=18, labelloc=t,
+         label="SymbAI-Taint | Frozen pilot v1\nOPM system view - partial development prototype",
+         protocol="symbai-selective-analysis-pilot-v1", view="system"];
+  node [kind="object", shape=box, style="filled", fillcolor="#EFF6FF", color="#315A85",
+        fontname="Arial", fontsize=12, margin="0.16,0.10"];
+  edge [fontname="Arial", fontsize=9, color="#526477", arrowsize=0.75];
+
+  BinaryArtifact [label="Binary Artifact"];
+  RunSpecification [label="Run Specification\nvariant + regime + budget + seed"];
+  FrozenProtocol [label="Frozen Protocol"];
+  TypeResourceView [label="Type Resource View\nC/D: model + locator plan / frozen artifact\nA/B: no model"];
+  ProgramFacts [label="Program Facts"];
+  QueryManifest [label="Query Manifest"];
+  OperationCatalog [label="Operation Catalog"];
+  TypeFeatureView [label="Type Feature View\nlabels + scores + candidate diversity", information_role="type_view"];
+  PreparationCosts [label="Preparation Costs", stateful="true", states="collecting,complete"];
+  RunBundle [label="Run Bundle"];
+  GoldLabels [label="Gold Labels\noffline evaluation only", data_role="evaluation_only", fillcolor="#FFF1E5", color="#B76B2E"];
+  EvaluationReport [label="Evaluation Report"];
+
+  ProgramPreparing [kind="process", shape=ellipse, label="Program\nPreparing", role="program_preparing", zone="runtime", fillcolor="#EAF5EE", color="#33704B"];
+  QueryFreezing [kind="process", shape=ellipse, label="Query and Operation\nFreezing", role="candidate_generating", zone="runtime", fillcolor="#EAF5EE", color="#33704B"];
+  TypeInformationPreparing [kind="process", shape=ellipse, label="Type Information\nPreparing", role="type_preparing", zone="runtime", fillcolor="#EAF5EE", color="#33704B"];
+  AnalysisRunning [kind="process", shape=ellipse, label="Fixed-query Analysis\nRunning", role="analysis_running", zone="runtime", fillcolor="#DCEFE3", color="#33704B", penwidth=2];
+  ResultsEvaluating [kind="process", shape=ellipse, label="Results\nEvaluating", role="evaluating", zone="evaluation", fillcolor="#FFF1E5", color="#B76B2E"];
+
+  BinaryArtifact -> ProgramPreparing [relation="instrument", label="requires", arrowhead=odot];
+  FrozenProtocol -> ProgramPreparing [relation="instrument", label="requires", arrowhead=odot];
+  ProgramPreparing -> ProgramFacts [relation="result", label="yields", arrowhead=onormal];
+  PreparationCosts -> ProgramPreparing [relation="effect", label="affects", dir=both, arrowhead=normal, arrowtail=onormal, constraint=false];
+
+  ProgramFacts -> QueryFreezing [relation="instrument", label="requires", arrowhead=odot];
+  FrozenProtocol -> QueryFreezing [relation="instrument", label="requires", arrowhead=odot];
+  QueryFreezing -> QueryManifest [relation="result", label="yields", arrowhead=onormal];
+  QueryFreezing -> OperationCatalog [relation="result", label="yields", arrowhead=onormal];
+  PreparationCosts -> QueryFreezing [relation="effect", label="affects", dir=both, arrowhead=normal, arrowtail=onormal, constraint=false];
+
+  BinaryArtifact -> TypeInformationPreparing [relation="instrument", label="requires", arrowhead=odot];
+  RunSpecification -> TypeInformationPreparing [relation="instrument", label="requires", arrowhead=odot];
+  FrozenProtocol -> TypeInformationPreparing [relation="instrument", label="requires", arrowhead=odot];
+  TypeResourceView -> TypeInformationPreparing [relation="instrument", label="requires", arrowhead=odot];
+  TypeInformationPreparing -> TypeFeatureView [relation="result", label="yields", arrowhead=onormal];
+  PreparationCosts -> TypeInformationPreparing [relation="effect", label="affects", dir=both, arrowhead=normal, arrowtail=onormal, constraint=false];
+
+  ProgramFacts -> AnalysisRunning [relation="instrument", label="requires", arrowhead=odot];
+  QueryManifest -> AnalysisRunning [relation="instrument", label="requires", arrowhead=odot];
+  OperationCatalog -> AnalysisRunning [relation="instrument", label="requires", arrowhead=odot];
+  TypeFeatureView -> AnalysisRunning [relation="instrument", label="requires", arrowhead=odot];
+  RunSpecification -> AnalysisRunning [relation="instrument", label="requires", arrowhead=odot];
+  FrozenProtocol -> AnalysisRunning [relation="instrument", label="requires", arrowhead=odot];
+  PreparationCosts -> AnalysisRunning [relation="instrument", label="requires", arrowhead=odot];
+  AnalysisRunning -> RunBundle [relation="result", label="yields", arrowhead=onormal];
+
+  RunBundle -> ResultsEvaluating [relation="instrument", label="requires", arrowhead=odot];
+  QueryManifest -> ResultsEvaluating [relation="instrument", label="requires", arrowhead=odot];
+  FrozenProtocol -> ResultsEvaluating [relation="instrument", label="requires", arrowhead=odot];
+  GoldLabels -> ResultsEvaluating [relation="instrument", label="requires", arrowhead=odot];
+  ResultsEvaluating -> EvaluationReport [relation="result", label="yields", arrowhead=onormal];
+}

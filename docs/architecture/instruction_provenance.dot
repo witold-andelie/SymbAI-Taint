@@ -1,0 +1,60 @@
+digraph InstructionProvenance {
+  graph [rankdir=LR, labelloc=t, label="V17 Instruction Syntax and Register-Byte Provenance\nNo model, property decision, memory-value evaluation or TYGR compatibility claim",
+         protocol="symbai-selective-analysis-pilot-v1", view="instruction_provenance"];
+  node [kind=object, shape=box, style=filled, fillcolor="#EFF6FF", color="#315A85", fontname="Arial", fontsize=11];
+  edge [fontname="Arial", fontsize=9, color="#526477", arrowsize=0.7];
+  Retained [label="Three Original V15 Binary / Query Identities\nno new variants"];
+  Contracts [label="Copied Full Contracts\nproperty parameters stay in parent archive"];
+  Requests [label="Minimal Syntax Requests\nbinary hash, entry and target-store RVAs"];
+  Executable [label="File-Backed Executable Bytes\nwhole-file hash for identity only"];
+  Instructions [label="Capstone Instruction / Operand Records\nexact length and linear boundary"];
+  IR [label="Single-Instruction VEX Statements\nopt0; one matching IMark"];
+  Definitions [label="Register-Byte Definition Table\nPut spans and entry bytes", stateful=true, states="earlier_versions,updated_versions"];
+  Events [label="Event-Time Nodes and Dependency Edges\ninstruction-scoped temps; opaque loads"];
+  Bound [label="Restricted Affine Address Bindings\nbase / index uses stop at current Get"];
+  Candidate [label="Complete or Partial Worker Graph\nactual versions; no forbidden engines"];
+  Checked [label="Parent-Checked Graph Consistency\nversions, temps, edges, fingerprint, target"];
+  Persisted [label="Persisted Detailed Payload and SHA-256\ninside parent clock"];
+  Receipt [label="Parent Availability / Cost Receipt\nlate or failed graph remains unavailable"];
+  Report [label="Three-Input Provenance Report\nequal syntax visible; not type evidence"];
+
+  Snapshotting [kind=process, shape=ellipse, label="Frozen Binary and Contract\nSnapshotting", role="syntax_snapshotting", zone="runtime", fillcolor="#EAF5EE"];
+  Stripping [kind=process, shape=ellipse, label="Property Parameters\nStripping", role="syntax_stripping", zone="runtime", fillcolor="#EAF5EE"];
+  Decoding [kind=process, shape=ellipse, label="Executable Instructions\nDecoding", role="syntax_decoding", zone="runtime", fillcolor="#EAF5EE"];
+  Lifting [kind=process, shape=ellipse, label="One-Instruction IR\nLifting", role="syntax_lifting", zone="runtime", fillcolor="#EAF5EE"];
+  Recording [kind=process, shape=ellipse, label="Register-Byte and Temporary Events\nRecording", role="syntax_recording", zone="runtime", fillcolor="#EAF5EE"];
+  Binding [kind=process, shape=ellipse, label="Direct Address Syntax\nBinding", role="syntax_binding", zone="runtime", fillcolor="#EAF5EE"];
+  Validating [kind=process, shape=ellipse, label="Complete Persisted Graph Structure\nValidating", role="syntax_validating", zone="runtime", fillcolor="#EAF5EE"];
+  Persisting [kind=process, shape=ellipse, label="Complete Candidate Evidence\nPersisting", role="syntax_persisting", zone="runtime", fillcolor="#EAF5EE"];
+  Finalizing [kind=process, shape=ellipse, label="Parent Clock and Availability\nFinalizing", role="syntax_finalizing", zone="runtime", fillcolor="#EAF5EE"];
+  Reporting [kind=process, shape=ellipse, label="Available and Unavailable Inputs\nReporting", role="evaluating", zone="evaluation", fillcolor="#FFF1E5"];
+
+  Retained -> Snapshotting [relation=instrument, label=requires, arrowhead=odot];
+  Snapshotting -> Contracts [relation=result, label=yields, arrowhead=onormal];
+  Snapshotting -> Executable [relation=result, label=yields, arrowhead=onormal];
+  Contracts -> Stripping [relation=instrument, label=requires, arrowhead=odot];
+  Stripping -> Requests [relation=result, label=yields, arrowhead=onormal];
+  Requests -> Decoding [relation=instrument, label=requires, arrowhead=odot];
+  Executable -> Decoding [relation=instrument, label=requires, arrowhead=odot];
+  Decoding -> Instructions [relation=result, label=yields, arrowhead=onormal];
+  Instructions -> Lifting [relation=instrument, label=requires, arrowhead=odot];
+  Lifting -> IR [relation=result, label=yields, arrowhead=onormal];
+  IR -> Recording [relation=instrument, label=requires, arrowhead=odot];
+  Definitions -> Recording [relation=effect, label=affects, dir=both, arrowhead=normal, arrowtail=onormal];
+  Recording -> Events [relation=result, label=yields, arrowhead=onormal];
+  Events -> Binding [relation=instrument, label=requires, arrowhead=odot];
+  Instructions -> Binding [relation=instrument, label=requires, arrowhead=odot];
+  Binding -> Bound [relation=result, label=yields, arrowhead=onormal];
+  Binding -> Candidate [relation=result, label=yields, arrowhead=onormal];
+  Requests -> Validating [relation=instrument, label=requires, arrowhead=odot];
+  Candidate -> Validating [relation=instrument, label=requires, arrowhead=odot];
+  Bound -> Validating [relation=instrument, label=requires, arrowhead=odot];
+  Validating -> Checked [relation=result, label=yields, arrowhead=onormal];
+  Checked -> Persisting [relation=instrument, label=requires, arrowhead=odot];
+  Persisting -> Persisted [relation=result, label=yields, arrowhead=onormal];
+  Persisted -> Finalizing [relation=instrument, label=requires, arrowhead=odot];
+  Finalizing -> Receipt [relation=result, label=yields, arrowhead=onormal];
+  Persisted -> Reporting [relation=instrument, label=requires, arrowhead=odot];
+  Receipt -> Reporting [relation=instrument, label=requires, arrowhead=odot];
+  Reporting -> Report [relation=result, label=yields, arrowhead=onormal];
+}

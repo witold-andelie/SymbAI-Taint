@@ -1,0 +1,44 @@
+digraph NativeReadout {
+  graph [rankdir=LR, labelloc=t, label="V20 Native Readout Correspondence\nCoarse storage association and exploratory graph frontier; no exact-event typing",
+         protocol="symbai-selective-analysis-pilot-v1", view="native_readout"];
+  node [kind=object, shape=box, style=filled, fillcolor="#EFF6FF", color="#315A85", fontname="Arial", fontsize=11];
+  edge [fontname="Arial", fontsize=9, color="#526477", arrowsize=0.7];
+  Native [label="Three Retained V19 Native Captures\ncomplete groups, rows and tensor provenance"];
+  Binary [label="Pinned Compiled ELF Bytes and Minimal Write Requests\nno property bounds or labels"];
+  Sources [label="Frozen Native Annotation and Export Source\nBBL history summaries and direct hooks"];
+  Copies [label="Hashed Input and Source Snapshots"];
+  Loads [label="Fresh Static Address-Contributing Load Occurrences\ncanonical CFA metadata; syntax only"];
+  Groups [label="Unique Native Variable-Group Associations\nall original members and row order retained"];
+  Coincidences [label="Per-Row Annotation Addresses and Location Edges\nPC coincidence is not event proof"];
+  Frontier [label="Native Target Address-Root Frontier Witnesses\nstop at readout members; retain blocked edges/cycles"];
+  Limits [label="Mixed Annotation Context and Missing Event Identity\nno semantic base/index or V17 projection proof"];
+  Report [label="Three Queries / Six Load-Occurrence Denominator\ncoarse association and event status reported separately"];
+
+  Snapshotting [kind=process, shape=ellipse, label="Retained Evidence\nSnapshotting", role="readout_snapshotting", zone="evaluation", fillcolor="#FFF1E5"];
+  Decoding [kind=process, shape=ellipse, label="Canonical Address Load\nDecoding", role="readout_decoding", zone="evaluation", fillcolor="#FFF1E5"];
+  Associating [kind=process, shape=ellipse, label="Unique Physical Location\nAssociating", role="readout_associating", zone="evaluation", fillcolor="#FFF1E5"];
+  Tracing [kind=process, shape=ellipse, label="Native Value-Graph Frontier\nTracing", role="readout_tracing", zone="evaluation", fillcolor="#FFF1E5"];
+  Inspecting [kind=process, shape=ellipse, label="Annotation Context and Missing Provenance\nInspecting", role="readout_inspecting", zone="evaluation", fillcolor="#FFF1E5"];
+  Evaluating [kind=process, shape=ellipse, label="Separate Group and Event Evidence\nEvaluating", role="evaluating", zone="evaluation", fillcolor="#FFF1E5"];
+
+  Native -> Snapshotting [relation=instrument, label=requires, arrowhead=odot];
+  Binary -> Snapshotting [relation=instrument, label=requires, arrowhead=odot];
+  Sources -> Snapshotting [relation=instrument, label=requires, arrowhead=odot];
+  Snapshotting -> Copies [relation=result, label=yields, arrowhead=onormal];
+  Copies -> Decoding [relation=instrument, label=requires, arrowhead=odot];
+  Decoding -> Loads [relation=result, label=yields, arrowhead=onormal];
+  Copies -> Associating [relation=instrument, label=requires, arrowhead=odot];
+  Loads -> Associating [relation=instrument, label=requires, arrowhead=odot];
+  Associating -> Groups [relation=result, label=yields, arrowhead=onormal];
+  Associating -> Coincidences [relation=result, label=yields, arrowhead=onormal];
+  Copies -> Tracing [relation=instrument, label=requires, arrowhead=odot];
+  Groups -> Tracing [relation=instrument, label=requires, arrowhead=odot];
+  Tracing -> Frontier [relation=result, label=yields, arrowhead=onormal];
+  Copies -> Inspecting [relation=instrument, label=requires, arrowhead=odot];
+  Inspecting -> Limits [relation=result, label=yields, arrowhead=onormal];
+  Groups -> Evaluating [relation=instrument, label=requires, arrowhead=odot];
+  Coincidences -> Evaluating [relation=instrument, label=requires, arrowhead=odot];
+  Frontier -> Evaluating [relation=instrument, label=requires, arrowhead=odot];
+  Limits -> Evaluating [relation=instrument, label=requires, arrowhead=odot];
+  Evaluating -> Report [relation=result, label=yields, arrowhead=onormal];
+}

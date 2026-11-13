@@ -1,0 +1,47 @@
+digraph NativePreprocessing {
+  graph [rankdir=LR, labelloc=t, label="V19 Native TYGR Preprocessing Capture\nExisting compiled panel; CPU metadata loading and generation; every model forward blocked",
+         protocol="symbai-selective-analysis-pilot-v1", view="native_preprocessing"];
+  node [kind=object, shape=box, style=filled, fillcolor="#EFF6FF", color="#315A85", fontname="Arial", fontsize=11];
+  edge [fontname="Arial", fontsize=9, color="#526477", arrowsize=0.7];
+  Inputs [label="Three Pinned Compiled Integration Binaries\nand original query identities; separate from V17"];
+  Checkpoint [label="Pinned CPU Checkpoint and Original TYGR Sources"];
+  Copies [label="Hashed Input and Source Snapshots"];
+  Config [label="Actual Saved Configuration and Layer Capacities\nall loaded module forward methods guarded"];
+  Native [label="Native Graphs, NodeLabels and Original Variables\nDWARF-assisted symbolic feature generation"];
+  Tensors [label="Complete Prepared CPU Tensor Values\noriginal node and bidirectional edge order"];
+  Rows [label="Original / Flattened Groups and Collated Gather / Scatter\nreadout row correspondence; no logits"];
+  Runtime [label="Installed Versions and RGCN Forward Source\nsource evidence; behavior not executed or inferred"];
+  Protocol [label="Fixed Three-Case Matrix and 60 s Parent Budget\nrequest through complete payload persistence"];
+  Payloads [label="Persisted Worker Payloads and Parent Receipts\nfailed, partial and timed-out cases retained"];
+  Report [label="Newly Observed IDs, Domain Findings and Target Rows\nno historical-use, V17-projection or prediction claim"];
+
+  Snapshotting [kind=process, shape=ellipse, label="Pinned Evidence\nSnapshotting", role="native_snapshotting", zone="evaluation", fillcolor="#FFF1E5"];
+  Loading [kind=process, shape=ellipse, label="CPU Configuration Loading and Forward\nGuarding", role="native_guarding", zone="evaluation", fillcolor="#FFF1E5"];
+  Generating [kind=process, shape=ellipse, label="Original Native Graph\nGenerating", role="native_generating", zone="evaluation", fillcolor="#FFF1E5"];
+  Preparing [kind=process, shape=ellipse, label="Original Preprocessing and Collation\nRecording", role="native_preparing", zone="evaluation", fillcolor="#FFF1E5"];
+  Accounting [kind=process, shape=ellipse, label="Pure Correspondence Checking and Cost\nAccounting", role="native_accounting", zone="evaluation", fillcolor="#FFF1E5"];
+  Evaluating [kind=process, shape=ellipse, label="Complete Matrix and Domain Findings\nEvaluating", role="evaluating", zone="evaluation", fillcolor="#FFF1E5"];
+
+  Inputs -> Snapshotting [relation=instrument, label=requires, arrowhead=odot];
+  Checkpoint -> Snapshotting [relation=instrument, label=requires, arrowhead=odot];
+  Snapshotting -> Copies [relation=result, label=yields, arrowhead=onormal];
+  Copies -> Loading [relation=instrument, label=requires, arrowhead=odot];
+  Loading -> Config [relation=result, label=yields, arrowhead=onormal];
+  Loading -> Runtime [relation=result, label=yields, arrowhead=onormal];
+  Copies -> Generating [relation=instrument, label=requires, arrowhead=odot];
+  Config -> Generating [relation=instrument, label=requires, arrowhead=odot];
+  Generating -> Native [relation=result, label=yields, arrowhead=onormal];
+  Native -> Preparing [relation=instrument, label=requires, arrowhead=odot];
+  Config -> Preparing [relation=instrument, label=requires, arrowhead=odot];
+  Preparing -> Tensors [relation=result, label=yields, arrowhead=onormal];
+  Preparing -> Rows [relation=result, label=yields, arrowhead=onormal];
+  Tensors -> Accounting [relation=instrument, label=requires, arrowhead=odot];
+  Rows -> Accounting [relation=instrument, label=requires, arrowhead=odot];
+  Runtime -> Accounting [relation=instrument, label=requires, arrowhead=odot];
+  Protocol -> Accounting [relation=instrument, label=requires, arrowhead=odot];
+  Accounting -> Payloads [relation=result, label=yields, arrowhead=onormal];
+  Payloads -> Evaluating [relation=instrument, label=requires, arrowhead=odot];
+  Config -> Evaluating [relation=instrument, label=requires, arrowhead=odot];
+  Protocol -> Evaluating [relation=instrument, label=requires, arrowhead=odot];
+  Evaluating -> Report [relation=result, label=yields, arrowhead=onormal];
+}

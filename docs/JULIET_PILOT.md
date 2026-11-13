@@ -1,5 +1,11 @@
 # NIST Juliet Real-Benchmark Pilot
 
+> **Legacy pipeline experiment, not the frozen A-D pilot.** Raw historical counts are
+> retained below. The positive-only type-sink recheck is asymmetric with its negative
+> controls, so its aggregate scores cannot establish an unbiased GNN increment. These
+> runs did not measure equal-budget shared-scheduler performance. Current state:
+> [STATUS](STATUS.md); current protocol: [architecture](architecture.md).
+
 > Purpose: validate SymbAI-Taint on a **third-party real defect benchmark** (NIST SARD Juliet
 > C/C++ 1.3), replacing "100% on 6 hand-written programs" with more credible, larger-scale data whose
 > metrics honestly drop. This is core material for answering "overfitting / too few samples" at a
@@ -52,7 +58,7 @@ Decision: a binary is "detected" if the number of taint paths reported by the sy
   with no libc sink name → missed by name matching. **Phase 2 GNN type-driven recovers 8**
   (`large/rand/loop/memcpy/memmove/CWE135/alloca_loop/alloca_memcpy`, each 3–5 paths).
 
-### Direct evidence of GNN incremental recall
+### Historical positive recheck observations
 | CWE121 case | Phase 1 (name) | Phase 2 (GNN types) |
 |---|---|---|
 | CWE129_large / rand | 0 | **5** |
@@ -85,14 +91,16 @@ cross-border isolation). Scripts: `juliet_harness_llm.py` (type-sinks on symmetr
 - **④: naive stacking hurts** — `OPM_TYPE_SINKS` applied symmetrically also injects sink+argv-source into
   the good variants, fabricating many paths (even CWE78/122 good variants that had zero FP under standard),
   which the LLM fails to filter → precision collapses to 0.522.
-- **Conclusion**: **more modules is not better**. The GNN recall gain is real (③); the LLM precision gain
-  did not materialize in this configuration.
+- The selective positive recheck reported additional detections (③), but its asymmetric
+  protocol does not isolate a fair neural gain. The LLM precision gain did not
+  materialize in this configuration.
 
 > ⚠️ **Experimental limitation of this ablation (honest)**: to save time, the batch harness fed the LLM
 > **only GNN-type evidence**, **not** block 4 of the full pipeline's `_build_symbolic_evidence` — the
 > **angr symbolic constraints / parameter ranges** (which need Stage 8 symbolic execution). It is precisely
 > the symbolic constraints that let the LLM judge whether a sink is out-of-bounds/safe. So this proves
-> **"LLM + types-only = useless," not "LLM is useless."** The full "neuro-symbolic + LLM" stack (with
+> no improvement from the tested types-only LLM configuration. It does not establish that
+> types-only LLMs are generally useless. The full "neuro-symbolic + LLM" stack (with
 > symbolic hard evidence) has not yet been tested on Juliet — that is the next step (§7).
 
 ## 5. Honest Interpretation
@@ -110,8 +118,8 @@ cross-border isolation). Scripts: `juliet_harness_llm.py` (type-sinks on symmetr
 - **Analysis binaries are `-g` (not stripped)**: consistent with the system's design (always keep a `-g`
   copy for Stage 6 variable location; the analysis binary itself may be fully stripped — GNN semantic
   recovery under full stripping is separately validated by `demo_fullstrip.py`). For simplicity the pilot
-  runs detection on the same `-g` binary; the **mechanism** of GNN incremental recall is identical to the
-  fully-stripped scenario (type-driven sinks do not depend on function names).
+  runs detection on the same `-g` binary. This does not validate the same performance
+  on fully stripped inputs or establish an end-to-end DWARF-free type pipeline.
 - The main pilot's detection signal is **Stage 10 taint-path count > 0**; the LLM (Stage 11) ablation is in
   §4.x.
 
@@ -127,7 +135,7 @@ python benchmarks/juliet/juliet_harness_llm.py        # +GNN+LLM (symmetric type
 python benchmarks/juliet/juliet_harness_llm_clean.py  # standard + LLM (clean)
 ```
 
-## 7. Open Problems / Next Steps (the project roadmap)
+## 7. Historical open problems and proposed roadmap
 
 > These are real, known open problems — listing them openly at a conference/in a paper is more credible
 > than hiding them.
@@ -147,5 +155,6 @@ python benchmarks/juliet/juliet_harness_llm_clean.py  # standard + LLM (clean)
 5. **Fix the evaluation-methodology asymmetry** — the GNN-only 0.833 is the optimistic value of "type-sinks
    on positives only"; report metrics after treating positives and negatives uniformly.
 6. **True fully-stripped evaluation** — the pilot analyzes `-g` binaries; an end-to-end `--strip-all` run
-   would demonstrate the GNN's irreplaceability with no symbols (currently only qualitatively validated by
-   `demo_fullstrip.py`).
+   would require an independent variable-location method and fair structural/traditional
+   type baselines. `demo_fullstrip.py` uses a debug companion and does not establish
+   neural necessity on DWARF-free inputs.

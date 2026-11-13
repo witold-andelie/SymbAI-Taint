@@ -1,6 +1,11 @@
 # SymbAI-Taint — Internal Reference
 
-> **Detailed architecture, modules, and file call relationships.**
+> **Legacy 13-stage implementation reference; retained for provenance.** This describes
+> `src/pipeline.py`, not the active selective-analysis pilot. Small-example percentages
+> below are historical observations, not evidence of generalization or algorithm novelty.
+> Current scope/results: [STATUS](STATUS.md); current modules/contracts:
+> [architecture](architecture.md#components-and-implementation-boundary);
+> reproduction: [REPRODUCIBILITY](REPRODUCIBILITY.md).
 
 ---
 
@@ -28,7 +33,7 @@ ExecutionPaths, TaintTraces, AnalysisReport.
 TypeMetadataInjection, PathPrioritization, SymbolicExecution, TaintPropagation, SourceSinkChecking,
 Evaluation, ReportGeneration.
 
-### 1.2 Core innovations
+### 1.2 Legacy component design
 1. **GNN type recovery**: recover variable types from binaries with a graph neural network.
 2. **LLM orchestrator**: use an LLM for adjudication/decisions.
 3. **Soft-threshold decision**: balance precision and recall.

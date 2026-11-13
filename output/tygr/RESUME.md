@@ -1,5 +1,14 @@
 # GNN Integration — Reproduction & Recovery Notes
 
+> **Historical recovery notes for the earlier 13-stage pipeline.** The active pilot
+> uses guarded raw outputs and an external location adapter, with unchanged original
+> TYGR source. Source, models and local environments are not bundled here. Follow
+> [current compatibility](../../docs/VERSION_COMPAT.md),
+> [reproducibility](../../docs/REPRODUCIBILITY.md) and [status](../../docs/STATUS.md).
+> Old fallbacks and percentages below do not validate genuine C/D inputs or RQ1/RQ2.
+> The later model audit found a declared 60-ID domain versus saved capacity 44, not
+> an old-pyvex vocabulary proven to contain exactly 44 operations.
+
 > Reproduction notes for the GNN type-recovery integration. All tasks are local processes (a network drop
 > does not affect them). Full details: [../../docs/GNN_INTEGRATION.md](../../docs/GNN_INTEGRATION.md) and
 > [../../docs/VERSION_COMPAT.md](../../docs/VERSION_COMPAT.md).

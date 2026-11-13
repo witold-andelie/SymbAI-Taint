@@ -1,0 +1,60 @@
+digraph SymbAIOperandMapping {
+  graph [rankdir=TB, bgcolor="white", pad="0.35", nodesep="0.4", ranksep="0.6",
+         fontname="Arial", fontsize=18, labelloc=t,
+         label="SymbAI-Taint | Development v7 operand mapping\nOPM diagnostic - neural candidates never prove program relations",
+         protocol="symbai-selective-analysis-pilot-v1", view="operand_mapping"];
+  node [kind="object", shape=box, style="filled", fillcolor="#EFF6FF", color="#315A85",
+        fontname="Arial", fontsize=12, margin="0.16,0.10"];
+  edge [fontname="Arial", fontsize=9, color="#526477", arrowsize=0.75];
+
+  BinaryArtifact [label="Binary Artifact"];
+  QueryManifest [label="Query Manifest\nentry + write + bounds + input domain"];
+  PriorReview [label="Prior Physical Review\nCFA convention and slots"];
+  LocatorMetadata [label="Raw Locator Metadata\nIDs and locations only; no candidate values"];
+  OperandPlan [label="Operand Plan\nrole IDs + physical locations + anchors"];
+  RawExport [label="Genuine Raw Export\nseparate predictions and scores", information_role="raw_operand_candidates"];
+  UncheckedEvidence [label="Unchecked Program Evidence", consumable="true"];
+  VerifiedEvidence [label="Freshly Rechecked Program Evidence"];
+  OperandBundle [label="Operand Type Bundle\nraw export + independent bindings + proof"];
+  CommonOperandFacts [label="Common Operand Facts\nroles + locations + proven relations\nshared by all future arms"];
+  ViewSpecification [label="View Specification\nA/B hidden; C labels; D candidates and scores"];
+  OperandFeatureViews [label="Independent Operand Feature Views\nbase pointer / index\nfuture selection only; not integrated", information_role="type_view"];
+  MappingReport [label="Mapping Review Report\n2 operands of one query; preserved raw values"];
+
+  PlanProposing [kind="process", shape=ellipse, label="Operand Plan\nProposing", role="operand_plan_proposing", zone="runtime", fillcolor="#EAF5EE", color="#33704B"];
+  RelationsVerifying [kind="process", shape=ellipse, label="Program Relations\nVerifying", role="operand_proving", zone="runtime", fillcolor="#EAF5EE", color="#33704B"];
+  EvidenceRechecking [kind="process", shape=ellipse, label="Fresh Program Evidence\nRechecking", role="operand_rechecking", zone="runtime", guard="first_evidence_verified", fillcolor="#EAF5EE", color="#33704B"];
+  RawBinding [kind="process", shape=ellipse, label="Raw Predictions\nBinding", role="operand_binding", zone="runtime", guard="fresh_evidence_verified AND raw_identity_matches", fillcolor="#EAF5EE", color="#33704B"];
+  CommonFactsProjecting [kind="process", shape=ellipse, label="Common Program Facts\nProjecting", role="operand_facts_projecting", zone="runtime", fillcolor="#EAF5EE", color="#33704B"];
+  RoleViewsProjecting [kind="process", shape=ellipse, label="Per-Role Candidate Views\nProjecting", role="operand_views_projecting", zone="runtime", fillcolor="#EAF5EE", color="#33704B"];
+  ReportProducing [kind="process", shape=ellipse, label="Mapping Review Report\nProducing", role="mapping_reporting", zone="evaluation", fillcolor="#FFF1E5", color="#B76B2E"];
+
+  QueryManifest -> PlanProposing [relation="instrument", label="requires", arrowhead=odot];
+  PriorReview -> PlanProposing [relation="instrument", label="requires", arrowhead=odot];
+  LocatorMetadata -> PlanProposing [relation="instrument", label="requires", arrowhead=odot];
+  PlanProposing -> OperandPlan [relation="result", label="yields", arrowhead=onormal];
+  BinaryArtifact -> RelationsVerifying [relation="instrument", label="requires", arrowhead=odot];
+  QueryManifest -> RelationsVerifying [relation="instrument", label="requires", arrowhead=odot];
+  OperandPlan -> RelationsVerifying [relation="instrument", label="requires", arrowhead=odot];
+  RelationsVerifying -> UncheckedEvidence [relation="result", label="yields", arrowhead=onormal];
+  UncheckedEvidence -> EvidenceRechecking [relation="consumption", label="consumes", arrowhead=normal];
+  BinaryArtifact -> EvidenceRechecking [relation="instrument", label="requires", arrowhead=odot];
+  QueryManifest -> EvidenceRechecking [relation="instrument", label="requires", arrowhead=odot];
+  OperandPlan -> EvidenceRechecking [relation="instrument", label="requires", arrowhead=odot];
+  EvidenceRechecking -> VerifiedEvidence [relation="result", label="yields", arrowhead=onormal];
+  RawExport -> RawBinding [relation="instrument", label="requires", arrowhead=odot];
+  OperandPlan -> RawBinding [relation="instrument", label="requires", arrowhead=odot];
+  VerifiedEvidence -> RawBinding [relation="instrument", label="requires", arrowhead=odot];
+  RawBinding -> OperandBundle [relation="result", label="yields", arrowhead=onormal];
+  QueryManifest -> CommonFactsProjecting [relation="instrument", label="requires", arrowhead=odot];
+  OperandPlan -> CommonFactsProjecting [relation="instrument", label="requires", arrowhead=odot];
+  VerifiedEvidence -> CommonFactsProjecting [relation="instrument", label="requires", arrowhead=odot];
+  CommonFactsProjecting -> CommonOperandFacts [relation="result", label="yields", arrowhead=onormal];
+  OperandBundle -> RoleViewsProjecting [relation="instrument", label="requires", arrowhead=odot];
+  ViewSpecification -> RoleViewsProjecting [relation="instrument", label="requires", arrowhead=odot];
+  RoleViewsProjecting -> OperandFeatureViews [relation="result", label="yields", arrowhead=onormal];
+  OperandBundle -> ReportProducing [relation="instrument", label="requires", arrowhead=odot];
+  CommonOperandFacts -> ReportProducing [relation="instrument", label="requires", arrowhead=odot];
+  VerifiedEvidence -> ReportProducing [relation="instrument", label="requires", arrowhead=odot];
+  ReportProducing -> MappingReport [relation="result", label="yields", arrowhead=onormal];
+}

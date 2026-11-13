@@ -1,0 +1,61 @@
+digraph CompiledQueryDiagnostic {
+  graph [rankdir=TB, bgcolor="white", pad="0.3", nodesep="0.35", ranksep="0.55",
+         fontname="Arial", fontsize=18, labelloc=t,
+         label="SymbAI-Taint | Development v8 compiled queries\nMapping and scoped validation only - no scheduling comparison",
+         protocol="symbai-selective-analysis-pilot-v1", view="compiled_queries"];
+  node [kind="object", shape=box, style=filled, fillcolor="#EFF6FF", color="#315A85", fontname="Arial", fontsize=11];
+  edge [fontname="Arial", fontsize=9, color="#526477", arrowsize=0.7];
+
+  Sources [label="Two Fixed Developer Sources\nand Label-Free Specifications"];
+  Toolchain [label="Existing Compiler and Model\npinned flags and model hash"];
+  Binary [label="Binary Artifact\nor Compile Failure Record"];
+  Query [label="Fixed Query and Extraction Status\nentry / write / object / input domain"];
+  RawCandidates [label="Fresh Raw Candidates\nor Acquisition Failure Record", information_role="raw_operand_candidates"];
+  LocatorMetadata [label="Physical Locator Metadata\nIDs and CFA ranges; no type values"];
+  ProposedPlans [label="Two Proposed Operand Assignments\nentry-expression claims", consumable="true"];
+  MappingEvidence [label="Mapping Status and All Attempts\nunique verified + alternatives rejected\n+ fresh recheck, else unknown"];
+  PropertyOutcome [label="Freshly Validated Scoped Outcome\nviolation / exclusion / unknown"];
+  CaseRecords [label="Two Planned Case Records\nfailures remain in denominator"];
+  Gold [label="Offline Expected Outcomes", data_role="evaluation_only"];
+  Report [label="Separate Property and Mapping Report\nnot held-out or neural benefit evidence"];
+
+  Compiling [kind=process, shape=ellipse, label="Source Compiling", role="compiling", zone="runtime", fillcolor="#EAF5EE"];
+  Extracting [kind=process, shape=ellipse, label="Query Extracting", role="query_extracting", zone="runtime", fillcolor="#EAF5EE"];
+  Acquiring [kind=process, shape=ellipse, label="Unlabeled Predictions\nAcquiring", role="type_acquiring", zone="runtime", fillcolor="#EAF5EE"];
+  Proposing [kind=process, shape=ellipse, label="Physical Assignments\nProposing", role="operand_plan_proposing", zone="runtime", fillcolor="#EAF5EE"];
+  Proving [kind=process, shape=ellipse, label="Assignments Verifying\nand Freshly Rechecking", role="operand_proving", zone="runtime", fillcolor="#EAF5EE"];
+  Checking [kind=process, shape=ellipse, label="Property Checking\nand Freshly Validating", role="property_checking", zone="runtime", fillcolor="#EAF5EE"];
+  Retaining [kind=process, shape=ellipse, label="Planned Case Records\nRetaining", role="case_recording", zone="runtime", fillcolor="#EAF5EE"];
+  Evaluating [kind=process, shape=ellipse, label="Offline Outcomes\nEvaluating", role="evaluating", zone="evaluation", fillcolor="#FFF1E5"];
+
+  Sources -> Compiling [relation=instrument, label=requires, arrowhead=odot];
+  Toolchain -> Compiling [relation=instrument, label=requires, arrowhead=odot];
+  Compiling -> Binary [relation=result, label=yields, arrowhead=onormal];
+  Binary -> Extracting [relation=instrument, label=requires, arrowhead=odot];
+  Sources -> Extracting [relation=instrument, label=requires, arrowhead=odot];
+  Extracting -> Query [relation=result, label=yields, arrowhead=onormal];
+  Binary -> Acquiring [relation=instrument, label=requires, arrowhead=odot];
+  Toolchain -> Acquiring [relation=instrument, label=requires, arrowhead=odot];
+  Acquiring -> RawCandidates [relation=result, label=yields, arrowhead=onormal];
+  Acquiring -> LocatorMetadata [relation=result, label=yields, arrowhead=onormal];
+  LocatorMetadata -> Proposing [relation=instrument, label=requires, arrowhead=odot];
+  Query -> Proposing [relation=instrument, label=requires, arrowhead=odot];
+  Sources -> Proposing [relation=instrument, label=requires, arrowhead=odot];
+  Proposing -> ProposedPlans [relation=result, label=yields, arrowhead=onormal];
+  ProposedPlans -> Proving [relation=consumption, label=consumes, arrowhead=normal];
+  Binary -> Proving [relation=instrument, label=requires, arrowhead=odot];
+  Query -> Proving [relation=instrument, label=requires, arrowhead=odot];
+  Proving -> MappingEvidence [relation=result, label=yields, arrowhead=onormal];
+  Binary -> Checking [relation=instrument, label=requires, arrowhead=odot];
+  Query -> Checking [relation=instrument, label=requires, arrowhead=odot];
+  Checking -> PropertyOutcome [relation=result, label=yields, arrowhead=onormal];
+  Sources -> Retaining [relation=instrument, label=requires, arrowhead=odot];
+  Query -> Retaining [relation=instrument, label=requires, arrowhead=odot];
+  RawCandidates -> Retaining [relation=instrument, label=requires, arrowhead=odot];
+  MappingEvidence -> Retaining [relation=instrument, label=requires, arrowhead=odot];
+  PropertyOutcome -> Retaining [relation=instrument, label=requires, arrowhead=odot];
+  Retaining -> CaseRecords [relation=result, label=yields, arrowhead=onormal];
+  CaseRecords -> Evaluating [relation=instrument, label=requires, arrowhead=odot];
+  Gold -> Evaluating [relation=instrument, label=requires, arrowhead=odot];
+  Evaluating -> Report [relation=result, label=yields, arrowhead=onormal];
+}

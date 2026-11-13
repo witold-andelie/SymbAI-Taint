@@ -1,0 +1,8 @@
+{
+  "schema": "symbai.compiled_query_labels.v1",
+  "scope": "function_entry_RDI_0_to_15_first_dynamic_write_not_main_reachability",
+  "labels": [
+    {"query_id": "offset_index", "expected": "violation"},
+    {"query_id": "masked_index", "expected": "excluded_within_scope"}
+  ]
+}

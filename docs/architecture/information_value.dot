@@ -1,0 +1,83 @@
+digraph SymbAIInformationValue {
+  graph [rankdir=TB, bgcolor="white", pad="0.35", nodesep="0.4", ranksep="0.6",
+         fontname="Arial", fontsize=18, labelloc=t,
+         label="SymbAI-Taint | Development v6 information diagnostic\nOPM view - preparation excluded; analysis and validation paid",
+         protocol="symbai-selective-analysis-pilot-v1", view="information_value"];
+  node [kind="object", shape=box, style="filled", fillcolor="#EFF6FF", color="#315A85",
+        fontname="Arial", fontsize=12, margin="0.16,0.10"];
+  edge [fontname="Arial", fontsize=9, color="#526477", arrowsize=0.75];
+
+  BinaryArtifact [label="Binary Artifact"];
+  QueryManifest [label="Reviewed Query Manifest\nfixed input range + object bounds"];
+  RunSpecification [label="Information Run Specification\nmethod + analysis budget"];
+  TypeResourceView [label="Frozen Type Resource View\nC/D: checked mapped artifact\nA/B/controls: hidden"];
+  TypeFeatureView [label="Type Feature View\nmissing / label / candidates and scores", information_role="type_view"];
+  InformationReady [label="Projection Readiness\nno type values"];
+  ProgramFacts [label="Common Program Facts\nsame structural features"];
+  PreparedCheckers [label="Prepared Checkers\nsymbolic + byte-bound checker", stateful="true", states="initial_cache_empty,locally_updated"];
+  PreparationCosts [label="Preparation Costs\nexcluded from information budget", stateful="true", states="collecting,complete"];
+  RunState [label="Run State\ncheckpoint + selected evidence", stateful="true", states="ready,running,stopped"];
+  InformationBudget [label="Information Budget\nselection + operations + validation + recording", stateful="true", states="running,exhausted,stopped"];
+  RunLedger [label="Run Ledger\npreparation wall + charged analysis", stateful="true", states="recording,finalized"];
+  OperationCatalog [label="Operation Catalog\nA-D: frozen three operations\ncontrols: declared fixed stage lists"];
+  ActionRequest [label="Action Request", consumable="true"];
+  UncheckedOutcome [label="Unchecked Outcome", consumable="true"];
+  ValidatedOutcome [label="Validated Outcome", consumable="true"];
+  RunBundle [label="Information Run Bundle"];
+  GoldLabels [label="Gold Labels\noffline only", data_role="evaluation_only", fillcolor="#FFF1E5", color="#B76B2E"];
+  InformationReport [label="Information Value Report\none query + conclusions + sequences + charged costs"];
+
+  CommonPreparing [kind="process", shape=ellipse, label="Common Checker\nPreparing", role="preparing", zone="runtime", fillcolor="#EAF5EE", color="#33704B"];
+  ViewProjecting [kind="process", shape=ellipse, label="Type View\nProjecting", role="projecting", zone="runtime", fillcolor="#EAF5EE", color="#33704B"];
+  BudgetStarting [kind="process", shape=ellipse, label="Information Budget\nStarting", role="initializing", zone="runtime", fillcolor="#EAF5EE", color="#33704B"];
+  ActionSelecting [kind="process", shape=ellipse, label="Action\nSelecting", role="selecting", zone="runtime", guard="running AND eligible AND budget_available", fillcolor="#DCEFE3", color="#33704B"];
+  OperationExecuting [kind="process", shape=ellipse, label="Selected Operation\nExecuting", role="checking", zone="runtime", fillcolor="#EAF5EE", color="#33704B"];
+  EvidenceValidating [kind="process", shape=ellipse, label="Fresh Evidence\nValidating", role="validating", zone="runtime", fillcolor="#EAF5EE", color="#33704B"];
+  StateUpdating [kind="process", shape=ellipse, label="Checkpoint and Charged Cost\nUpdating", role="updating", zone="runtime", fillcolor="#EAF5EE", color="#33704B"];
+  QueryFinalizing [kind="process", shape=ellipse, label="Information Query\nFinalizing", role="finalizing", zone="runtime", guard="resolved OR exhausted OR no_operation OR aborted", fillcolor="#EAF5EE", color="#33704B"];
+  InformationEvaluating [kind="process", shape=ellipse, label="Information Outcomes\nEvaluating", role="evaluating", zone="evaluation", fillcolor="#FFF1E5", color="#B76B2E"];
+
+  BinaryArtifact -> CommonPreparing [relation="instrument", label="requires", arrowhead=odot];
+  QueryManifest -> CommonPreparing [relation="instrument", label="requires", arrowhead=odot];
+  CommonPreparing -> ProgramFacts [relation="result", label="yields", arrowhead=onormal];
+  CommonPreparing -> PreparedCheckers [relation="result", label="yields", arrowhead=onormal];
+  PreparationCosts -> CommonPreparing [relation="effect", label="affects", dir=both, arrowhead=normal, arrowtail=onormal, constraint=false];
+  TypeResourceView -> ViewProjecting [relation="instrument", label="requires", arrowhead=odot];
+  RunSpecification -> ViewProjecting [relation="instrument", label="requires", arrowhead=odot];
+  ViewProjecting -> TypeFeatureView [relation="result", label="yields", arrowhead=onormal];
+  ViewProjecting -> InformationReady [relation="result", label="yields", arrowhead=onormal];
+  PreparationCosts -> ViewProjecting [relation="effect", label="affects", dir=both, arrowhead=normal, arrowtail=onormal, constraint=false];
+  ProgramFacts -> BudgetStarting [relation="instrument", label="requires", arrowhead=odot];
+  InformationReady -> BudgetStarting [relation="instrument", label="requires", arrowhead=odot];
+  RunSpecification -> BudgetStarting [relation="instrument", label="requires", arrowhead=odot];
+  BudgetStarting -> RunState [relation="result", label="yields", arrowhead=onormal];
+  BudgetStarting -> InformationBudget [relation="result", label="yields", arrowhead=onormal];
+  BudgetStarting -> RunLedger [relation="result", label="yields", arrowhead=onormal];
+
+  TypeFeatureView -> ActionSelecting [relation="instrument", label="requires", arrowhead=odot];
+  ProgramFacts -> ActionSelecting [relation="instrument", label="requires", arrowhead=odot];
+  RunSpecification -> ActionSelecting [relation="instrument", label="requires", arrowhead=odot];
+  OperationCatalog -> ActionSelecting [relation="instrument", label="requires", arrowhead=odot];
+  RunState -> ActionSelecting [relation="instrument", label="requires", arrowhead=odot];
+  InformationBudget -> ActionSelecting [relation="instrument", label="requires", arrowhead=odot];
+  ActionSelecting -> ActionRequest [relation="result", label="yields", arrowhead=onormal];
+  ActionRequest -> OperationExecuting [relation="consumption", label="consumes", arrowhead=normal];
+  QueryManifest -> OperationExecuting [relation="instrument", label="requires", arrowhead=odot];
+  PreparedCheckers -> OperationExecuting [relation="effect", label="affects", dir=both, arrowhead=normal, arrowtail=onormal, constraint=false];
+  OperationExecuting -> UncheckedOutcome [relation="result", label="yields", arrowhead=onormal];
+  UncheckedOutcome -> EvidenceValidating [relation="consumption", label="consumes", arrowhead=normal];
+  BinaryArtifact -> EvidenceValidating [relation="instrument", label="requires", arrowhead=odot];
+  QueryManifest -> EvidenceValidating [relation="instrument", label="requires", arrowhead=odot];
+  EvidenceValidating -> ValidatedOutcome [relation="result", label="yields", arrowhead=onormal];
+  ValidatedOutcome -> StateUpdating [relation="consumption", label="consumes", arrowhead=normal];
+  RunState -> StateUpdating [relation="effect", label="affects", dir=both, arrowhead=normal, arrowtail=onormal, constraint=false];
+  RunLedger -> StateUpdating [relation="effect", label="affects", dir=both, arrowhead=normal, arrowtail=onormal, constraint=false];
+  InformationBudget -> StateUpdating [relation="effect", label="affects", dir=both, arrowhead=normal, arrowtail=onormal, constraint=false];
+  RunState -> QueryFinalizing [relation="instrument", label="requires", arrowhead=odot];
+  RunLedger -> QueryFinalizing [relation="effect", label="affects", dir=both, arrowhead=normal, arrowtail=onormal];
+  InformationBudget -> QueryFinalizing [relation="effect", label="affects", dir=both, arrowhead=normal, arrowtail=onormal, constraint=false];
+  QueryFinalizing -> RunBundle [relation="result", label="yields", arrowhead=onormal];
+  RunBundle -> InformationEvaluating [relation="instrument", label="requires", arrowhead=odot];
+  GoldLabels -> InformationEvaluating [relation="instrument", label="requires", arrowhead=odot];
+  InformationEvaluating -> InformationReport [relation="result", label="yields", arrowhead=onormal];
+}

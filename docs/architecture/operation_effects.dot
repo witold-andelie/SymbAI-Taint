@@ -1,0 +1,64 @@
+digraph OperationEvidenceGate {
+  graph [rankdir=TB, bgcolor="white", pad="0.3", nodesep="0.35", ranksep="0.5",
+         fontname="Arial", fontsize=18, labelloc=t,
+         label="SymbAI-Taint | Development v11 operation evidence\nFresh checkpoints, planning versus decisions, separate paid-proof audit",
+         protocol="symbai-selective-analysis-pilot-v1", view="operation_effects"];
+  node [kind=object, shape=box, style=filled, fillcolor="#EFF6FF", color="#315A85", fontname="Arial", fontsize=11];
+  edge [fontname="Arial", fontsize=9, color="#526477", arrowsize=0.7];
+  PrimaryQueries [label="12 Fixed Generated Query Contracts\nno type or semantic-summary inputs"];
+  Checkpoint [label="Canonical Empty Entry Checkpoint\nno prior facts / prefix / attempts"];
+  Catalog [label="Five Fixed Probes\nbounded / full / RDA+full / direct-prefix+full / local"];
+  Features [label="Pre-Action Structural Features\nand recorded first-operation hint"];
+  Request [label="Fresh Alternative Request", consumable=true];
+  Planning [label="Planning Artifacts\nRDA graph / exact prefix; not decisions"];
+  Unchecked [label="Unchecked Property Outcome", consumable=true];
+  Validated [label="Freshly Validated Property Record\nscoped decision or unknown"];
+  Budget [label="Shared Worker Budget\nstartup / feature capture / five probes / recovery"];
+  Receipt [label="Separate Parent Worker Charge\nnot multiplied across probe rows"];
+  Dataset [label="180 Probe Records / 12 Unique Inputs\n3 repetitions; failures retained"];
+  Gold [label="Primary Offline Expected Outcomes", data_role="evaluation_only"];
+  PrimaryReport [label="Operation Evidence and Work Report\ncorrectness gate and descriptive costs"];
+  RetainedProof [label="Retained Compiled Operand Proofs\npreviously paid, not free", information_role="retained_mapping_proof"];
+  CompiledInputs [label="3 Existing Compiled Integration Queries\nseparate panel; not pooled"];
+  ConditionalPanel [label="Conditional Facts-to-Decision Audit\nno new program proof or neural use"];
+  GateReport [label="Scientific Gate Report\nno deployed-policy speed or neural claim"];
+
+  Capturing [kind=process, shape=ellipse, label="Pre-Action Features\nCapturing", role="feature_capturing", zone="runtime", fillcolor="#EAF5EE"];
+  Requesting [kind=process, shape=ellipse, label="Fixed Alternatives\nRequesting", role="fixed_requesting", zone="runtime", fillcolor="#EAF5EE"];
+  Executing [kind=process, shape=ellipse, label="Independent Fresh Probe\nExecuting", role="operation_probing", zone="runtime", fillcolor="#EAF5EE"];
+  Validating [kind=process, shape=ellipse, label="Fresh Property Evidence\nValidating", role="validating", zone="runtime", fillcolor="#EAF5EE"];
+  Finalizing [kind=process, shape=ellipse, label="Complete Worker Records\nFinalizing", role="finalizing", zone="runtime", fillcolor="#EAF5EE"];
+  Evaluating [kind=process, shape=ellipse, label="Offline Operation Effects\nEvaluating", role="evaluating", zone="evaluation", fillcolor="#FFF1E5"];
+  Deducing [kind=process, shape=ellipse, label="Paid-Proof Consequences\nAuditing", role="compiled_proof_auditing", zone="evaluation", fillcolor="#FFF1E5"];
+  Reporting [kind=process, shape=ellipse, label="Separate Panel Findings\nReporting", role="reporting", zone="evaluation", fillcolor="#FFF1E5"];
+
+  PrimaryQueries -> Capturing [relation=instrument, label=requires, arrowhead=odot];
+  Capturing -> Features [relation=result, label=yields, arrowhead=onormal];
+  PrimaryQueries -> Requesting [relation=instrument, label=requires, arrowhead=odot];
+  Checkpoint -> Requesting [relation=instrument, label=requires, arrowhead=odot];
+  Catalog -> Requesting [relation=instrument, label=requires, arrowhead=odot];
+  Requesting -> Request [relation=result, label=yields, arrowhead=onormal];
+  Request -> Executing [relation=consumption, label=consumes, arrowhead=normal];
+  PrimaryQueries -> Executing [relation=instrument, label=requires, arrowhead=odot];
+  Executing -> Planning [relation=result, label=yields, arrowhead=onormal];
+  Executing -> Unchecked [relation=result, label=yields, arrowhead=onormal];
+  Unchecked -> Validating [relation=consumption, label=consumes, arrowhead=normal];
+  PrimaryQueries -> Validating [relation=instrument, label=requires, arrowhead=odot];
+  Validating -> Validated [relation=result, label=yields, arrowhead=onormal];
+  Validated -> Finalizing [relation=instrument, label=requires, arrowhead=odot];
+  Planning -> Finalizing [relation=instrument, label=requires, arrowhead=odot];
+  Features -> Finalizing [relation=instrument, label=requires, arrowhead=odot];
+  Budget -> Finalizing [relation=instrument, label=requires, arrowhead=odot];
+  Finalizing -> Dataset [relation=result, label=yields, arrowhead=onormal];
+  Finalizing -> Receipt [relation=result, label=yields, arrowhead=onormal];
+  Dataset -> Evaluating [relation=instrument, label=requires, arrowhead=odot];
+  Gold -> Evaluating [relation=instrument, label=requires, arrowhead=odot];
+  Evaluating -> PrimaryReport [relation=result, label=yields, arrowhead=onormal];
+  RetainedProof -> Deducing [relation=instrument, label=requires, arrowhead=odot];
+  CompiledInputs -> Deducing [relation=instrument, label=requires, arrowhead=odot];
+  Deducing -> ConditionalPanel [relation=result, label=yields, arrowhead=onormal];
+  PrimaryReport -> Reporting [relation=instrument, label=requires, arrowhead=odot];
+  ConditionalPanel -> Reporting [relation=instrument, label=requires, arrowhead=odot];
+  Receipt -> Reporting [relation=instrument, label=requires, arrowhead=odot];
+  Reporting -> GateReport [relation=result, label=yields, arrowhead=onormal];
+}

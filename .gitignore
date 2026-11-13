@@ -1,5 +1,5 @@
 # ============================================================
-#  NeuroSymbolic-BinSec — .gitignore
+#  SymbAI-Taint — .gitignore
 # ============================================================
 
 # ---- Python ----
@@ -11,6 +11,7 @@ __pycache__/
 venv/
 .pytest_cache/
 .mypy_cache/
+pytest-cache-files-*/
 
 # ---- OS / editor junk ----
 .DS_Store
@@ -23,6 +24,9 @@ Thumbs.db
 .codegraph/
 .env
 *.local.json
+.scratch/
+/consultation/
+/SymbAI_Taint_NeuroSymbolic_Research_Proposal.md
 # API keys are read from the MIMO_API_KEY / MIMO_API_BASE env vars — never hardcode.
 
 # ---- Run outputs, logs & generated reports (re-created every run) ----

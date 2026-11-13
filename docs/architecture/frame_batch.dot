@@ -1,0 +1,53 @@
+digraph FrameBatchDiagnostic {
+  graph [rankdir=TB, bgcolor="white", pad="0.3", nodesep="0.35", ranksep="0.5",
+         fontname="Arial", fontsize=18, labelloc=t,
+         label="SymbAI-Taint | Development v10 explicit batch costs\nOne cold worker per three-query batch - no neural inputs",
+         protocol="symbai-selective-analysis-pilot-v1", view="frame_batch"];
+  node [kind=object, shape=box, style=filled, fillcolor="#EFF6FF", color="#315A85", fontname="Arial", fontsize=11];
+  edge [fontname="Arial", fontsize=9, color="#526477", arrowsize=0.7];
+  Specification [label="Fixed Batch Specification\n3 queries / fixed control / 15 s"];
+  Inputs [label="Copied Binary and Query Contracts\n3 existing developer inputs"];
+  Guard [label="Corrected Byte/Loader Contract\nrelocation coverage + loaded instruction match"];
+  BatchState [label="Batch Order and Budget State", stateful=true, states="running,exhausted,finished"];
+  Request [label="Next Query Request", consumable=true];
+  Outcome [label="Complete Query Outcome\nidentity + evidence + time interval"];
+  Flushed [label="Flushed Query Completion Records\ncrash-recoverable evidence"];
+  WorkerResult [label="Worker Result or Failure Status"];
+  ParentClock [label="Measured Parent Batch Clock\nstartup through cleanup and recovery"];
+  Receipt [label="Charged Batch Receipt\nall 3 identities; late results become unknown"];
+  Gold [label="Offline Expected Outcomes", data_role="evaluation_only"];
+  Report [label="9 Batch Costs / 27 Query Outcomes\n3 unique developer queries; no neural claim"];
+
+  Starting [kind=process, shape=ellipse, label="Cold Batch\nStarting", role="batch_starting", zone="runtime", fillcolor="#EAF5EE"];
+  Selecting [kind=process, shape=ellipse, label="Fixed Next Query\nSelecting", role="fixed_selecting", zone="runtime", fillcolor="#EAF5EE"];
+  Running [kind=process, shape=ellipse, label="Fresh Query Control\nRunning and Validating", role="batch_query_running", zone="runtime", fillcolor="#EAF5EE"];
+  Flushing [kind=process, shape=ellipse, label="Complete Query Record\nFlushing", role="flushing", zone="runtime", fillcolor="#EAF5EE"];
+  Ending [kind=process, shape=ellipse, label="Batch Worker\nEnding", role="worker_ending", zone="runtime", fillcolor="#EAF5EE"];
+  Finalizing [kind=process, shape=ellipse, label="Parent Recovery and Budget\nFinalizing", role="batch_finalizing", zone="runtime", fillcolor="#EAF5EE"];
+  Evaluating [kind=process, shape=ellipse, label="Offline Batch Costs and Outcomes\nEvaluating", role="evaluating", zone="evaluation", fillcolor="#FFF1E5"];
+
+  Specification -> Starting [relation=instrument, label=requires, arrowhead=odot];
+  Starting -> BatchState [relation=result, label=yields, arrowhead=onormal];
+  Starting -> ParentClock [relation=result, label=yields, arrowhead=onormal];
+  Specification -> Selecting [relation=instrument, label=requires, arrowhead=odot];
+  BatchState -> Selecting [relation=instrument, label=requires, arrowhead=odot];
+  Selecting -> Request [relation=result, label=yields, arrowhead=onormal];
+  Request -> Running [relation=consumption, label=consumes, arrowhead=normal];
+  Inputs -> Running [relation=instrument, label=requires, arrowhead=odot];
+  Guard -> Running [relation=instrument, label=requires, arrowhead=odot];
+  Running -> Outcome [relation=result, label=yields, arrowhead=onormal];
+  Outcome -> Flushing [relation=instrument, label=requires, arrowhead=odot];
+  Flushing -> Flushed [relation=result, label=yields, arrowhead=onormal];
+  BatchState -> Flushing [relation=effect, label=affects, arrowhead=normal, arrowtail=onormal, dir=both];
+  Flushed -> Ending [relation=instrument, label=requires, arrowhead=odot];
+  BatchState -> Ending [relation=instrument, label=requires, arrowhead=odot];
+  Ending -> WorkerResult [relation=result, label=yields, arrowhead=onormal];
+  WorkerResult -> Finalizing [relation=instrument, label=requires, arrowhead=odot];
+  Flushed -> Finalizing [relation=instrument, label=requires, arrowhead=odot];
+  ParentClock -> Finalizing [relation=instrument, label=requires, arrowhead=odot];
+  Specification -> Finalizing [relation=instrument, label=requires, arrowhead=odot];
+  Finalizing -> Receipt [relation=result, label=yields, arrowhead=onormal];
+  Receipt -> Evaluating [relation=instrument, label=requires, arrowhead=odot];
+  Gold -> Evaluating [relation=instrument, label=requires, arrowhead=odot];
+  Evaluating -> Report [relation=result, label=yields, arrowhead=onormal];
+}

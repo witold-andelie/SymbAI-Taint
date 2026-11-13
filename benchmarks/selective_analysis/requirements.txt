@@ -1,0 +1,3 @@
+# Minimal local pilot, tested on Python 3.13.10. TYGR needs its own upstream environment.
+angr==9.2.217
+pytest==9.0.3

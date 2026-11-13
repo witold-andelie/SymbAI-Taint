@@ -1,0 +1,49 @@
+digraph InformationReadiness {
+  graph [rankdir=LR, labelloc=t, label="V16 Offline Information Readiness and Trace-Cost Gate\nRetained evidence only; no model, mapper, checker or online selector execution",
+         protocol="symbai-selective-analysis-pilot-v1", view="information_readiness"];
+  node [kind=object, shape=box, style=filled, fillcolor="#EFF6FF", color="#315A85", fontname="Arial", fontsize=11];
+  edge [fontname="Arial", fontsize=9, color="#526477", arrowsize=0.7];
+  Cascade [label="Retained V15 Contracts and 18+3 Records\n3 authored mechanisms; all repetitions"];
+  Location [label="Retained V12 Raw Exports and Location Bundles\n3 different compiled queries; actual logits"];
+  Source [label="Current Adapter and Upstream Source Evidence\nDWARF requirement; incomplete register identities"];
+  Gold [label="Retained Offline Expected Outcomes", data_role="evaluation_only"];
+  Historical [label="Historical V5 Cold Acquisition Receipts\ndifferent query; context only"];
+  Copies [label="Hashed Immutable Input and Source Copies"];
+  Validated [label="Recomputed Complete V15 Evaluation\nwrong/failed/late/reference-blocked data rejected"];
+  Coverage [label="Exact Binary / Query / Use-Site Intersection\nunavailable is not zero neural value"];
+  Metadata [label="ELF Section Metadata and Frozen Bundle Inventory\nno new mapping or semantic proof"];
+  Cost [label="Optimistic Unknown-Prefix Deletion Ledger\nother parent costs fixed; not runtime upper bound"];
+  Context [label="Separate Historical Acquisition Context\nno cross-panel subtraction or warm-service estimate"];
+  Limits [label="Recorded Information and Cost Preconditions\nstatic structure/cardinality remain strong controls"];
+  Report [label="Offline Readiness Report\nno neural-benefit or held-out claim"];
+
+  Snapshotting [kind=process, shape=ellipse, label="Retained Inputs and Sources\nSnapshotting", role="readiness_snapshotting", zone="evaluation", fillcolor="#FFF1E5"];
+  Validating [kind=process, shape=ellipse, label="Complete Historical Evidence\nValidating", role="readiness_validating", zone="evaluation", fillcolor="#FFF1E5"];
+  Inventorying [kind=process, shape=ellipse, label="Exact Existing Information\nInventorying", role="readiness_inventorying", zone="evaluation", fillcolor="#FFF1E5"];
+  Accounting [kind=process, shape=ellipse, label="Revealed Outcome Trace Costs\nAccounting", role="readiness_accounting", zone="evaluation", fillcolor="#FFF1E5"];
+  Contextualizing [kind=process, shape=ellipse, label="Separate Historical Acquisition\nContextualizing", role="readiness_contextualizing", zone="evaluation", fillcolor="#FFF1E5"];
+  Reporting [kind=process, shape=ellipse, label="Information and Cost Preconditions\nReporting", role="evaluating", zone="evaluation", fillcolor="#FFF1E5"];
+
+  Cascade -> Snapshotting [relation=instrument, label=requires, arrowhead=odot];
+  Location -> Snapshotting [relation=instrument, label=requires, arrowhead=odot];
+  Source -> Snapshotting [relation=instrument, label=requires, arrowhead=odot];
+  Historical -> Snapshotting [relation=instrument, label=requires, arrowhead=odot];
+  Snapshotting -> Copies [relation=result, label=yields, arrowhead=onormal];
+  Copies -> Validating [relation=instrument, label=requires, arrowhead=odot];
+  Gold -> Validating [relation=instrument, label=requires, arrowhead=odot];
+  Validating -> Validated [relation=result, label=yields, arrowhead=onormal];
+  Copies -> Inventorying [relation=instrument, label=requires, arrowhead=odot];
+  Inventorying -> Metadata [relation=result, label=yields, arrowhead=onormal];
+  Inventorying -> Coverage [relation=result, label=yields, arrowhead=onormal];
+  Validated -> Accounting [relation=instrument, label=requires, arrowhead=odot];
+  Copies -> Accounting [relation=instrument, label=requires, arrowhead=odot];
+  Accounting -> Cost [relation=result, label=yields, arrowhead=onormal];
+  Copies -> Contextualizing [relation=instrument, label=requires, arrowhead=odot];
+  Contextualizing -> Context [relation=result, label=yields, arrowhead=onormal];
+  Coverage -> Reporting [relation=instrument, label=requires, arrowhead=odot];
+  Metadata -> Reporting [relation=instrument, label=requires, arrowhead=odot];
+  Cost -> Reporting [relation=instrument, label=requires, arrowhead=odot];
+  Context -> Reporting [relation=instrument, label=requires, arrowhead=odot];
+  Limits -> Reporting [relation=instrument, label=requires, arrowhead=odot];
+  Reporting -> Report [relation=result, label=yields, arrowhead=onormal];
+}

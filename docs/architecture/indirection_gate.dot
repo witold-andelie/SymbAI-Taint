@@ -1,0 +1,58 @@
+digraph IndirectionGate {
+  graph [rankdir=TB, bgcolor="white", pad="0.3", nodesep="0.35", ranksep="0.5",
+         fontname="Arial", fontsize=18, labelloc=t,
+         label="SymbAI-Taint | Development v14 operation mechanisms\nFinite readonly resolution versus intervals; separate modeled references; no neural inputs",
+         protocol="symbai-selective-analysis-pilot-v1", view="indirection_gate"];
+  node [kind=object, shape=box, style=filled, fillcolor="#EFF6FF", color="#315A85", fontname="Arial", fontsize=11];
+  edge [fontname="Arial", fontsize=9, color="#526477", arrowsize=0.7];
+  Recipes [label="3 Predeclared Authored Mechanism Recipes\nscalar span / safe chain / outside chain"];
+  Queries [label="Hashed ELF Bytes and Query Contracts\nreadonly tables and explicit input domains"];
+  Gold [label="Separate Authored Expected Outcomes", data_role="evaluation_only"];
+  Catalog [label="Four Fixed Methods\ninterval / finite / expanded / interval then finite"];
+  Limits [label="Fixed Limits\n32 values / 128 instructions / 30 s per worker"];
+  Request [label="Fresh Method Query Request", consumable=true];
+  Unchecked [label="Operation Outcome / Trace / Read Bytes\nfinite sets saturate to Top; no sampled exclusions", consumable=true];
+  Checked [label="Freshly Rechecked Status or Unknown\nabstract recheck or modeled symbolic replay"];
+  Receipt [label="Parent Process and Recovery Charge\nfinal parent/aggregate serialization excluded"];
+  RuntimeRows [label="12 Retained Method Records\nall three identities and failures"];
+  Ready [label="All Runtime Workers Finished\nreadiness only; no free query facts"];
+  RefRows [label="3 Separate Label-Free Reference Records\nliteral BVV domain enumeration or fresh symbolic scope"];
+  Report [label="Capability and Correctness Gate\nthree unique inputs; no speed or neural-value claim"];
+
+  Generating [kind=process, shape=ellipse, label="Predeclared ELF Mechanisms\nGenerating", role="indirection_generating", zone="runtime", fillcolor="#EAF5EE"];
+  Dispatching [kind=process, shape=ellipse, label="Fixed Method Requests\nDispatching", role="indirection_dispatching", zone="runtime", fillcolor="#EAF5EE"];
+  Executing [kind=process, shape=ellipse, label="Fresh Interval / Finite / Full\nExecuting", role="indirection_executing", zone="runtime", fillcolor="#EAF5EE"];
+  Rechecking [kind=process, shape=ellipse, label="Fresh Byte/Data or Symbolic Evidence\nRechecking", role="indirection_rechecking", zone="runtime", fillcolor="#EAF5EE"];
+  Recovering [kind=process, shape=ellipse, label="Complete Parent Records\nRecovering", role="indirection_recovering", zone="runtime", fillcolor="#EAF5EE"];
+  Referencing [kind=process, shape=ellipse, label="Independent Modeled Input Domains\nReferencing", role="indirection_referencing", zone="runtime", fillcolor="#EAF5EE"];
+  Evaluating [kind=process, shape=ellipse, label="Separate Capability and Correctness\nEvaluating", role="evaluating", zone="evaluation", fillcolor="#FFF1E5"];
+
+  Recipes -> Generating [relation=instrument, label=requires, arrowhead=odot];
+  Generating -> Queries [relation=result, label=yields, arrowhead=onormal];
+  Generating -> Gold [relation=result, label=yields, arrowhead=onormal];
+  Queries -> Dispatching [relation=instrument, label=requires, arrowhead=odot];
+  Catalog -> Dispatching [relation=instrument, label=requires, arrowhead=odot];
+  Dispatching -> Request [relation=result, label=yields, arrowhead=onormal];
+  Request -> Executing [relation=consumption, label=consumes, arrowhead=normal];
+  Queries -> Executing [relation=instrument, label=requires, arrowhead=odot];
+  Limits -> Executing [relation=instrument, label=requires, arrowhead=odot];
+  Executing -> Unchecked [relation=result, label=yields, arrowhead=onormal];
+  Unchecked -> Rechecking [relation=consumption, label=consumes, arrowhead=normal];
+  Queries -> Rechecking [relation=instrument, label=requires, arrowhead=odot];
+  Limits -> Rechecking [relation=instrument, label=requires, arrowhead=odot];
+  Rechecking -> Checked [relation=result, label=yields, arrowhead=onormal];
+  Checked -> Recovering [relation=instrument, label=requires, arrowhead=odot];
+  Limits -> Recovering [relation=instrument, label=requires, arrowhead=odot];
+  Recovering -> Receipt [relation=result, label=yields, arrowhead=onormal];
+  Recovering -> RuntimeRows [relation=result, label=yields, arrowhead=onormal];
+  Recovering -> Ready [relation=result, label=yields, arrowhead=onormal];
+  Ready -> Referencing [relation=instrument, label=requires, arrowhead=odot];
+  Queries -> Referencing [relation=instrument, label=requires, arrowhead=odot];
+  Limits -> Referencing [relation=instrument, label=requires, arrowhead=odot];
+  Referencing -> RefRows [relation=result, label=yields, arrowhead=onormal];
+  RuntimeRows -> Evaluating [relation=instrument, label=requires, arrowhead=odot];
+  RefRows -> Evaluating [relation=instrument, label=requires, arrowhead=odot];
+  Receipt -> Evaluating [relation=instrument, label=requires, arrowhead=odot];
+  Gold -> Evaluating [relation=instrument, label=requires, arrowhead=odot];
+  Evaluating -> Report [relation=result, label=yields, arrowhead=onormal];
+}

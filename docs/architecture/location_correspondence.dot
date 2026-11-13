@@ -1,0 +1,51 @@
+digraph LocationCorrespondence {
+  graph [rankdir=TB, bgcolor="white", pad="0.3", nodesep="0.35", ranksep="0.5",
+         fontname="Arial", fontsize=18, labelloc=t,
+         label="SymbAI-Taint | Development v12 location correspondence\nStatic identities only; no target-property proving or selector integration",
+         protocol="symbai-selective-analysis-pilot-v1", view="location_correspondence"];
+  node [kind=object, shape=box, style=filled, fillcolor="#EFF6FF", color="#315A85", fontname="Arial", fontsize=11];
+  edge [fontname="Arial", fontsize=9, color="#526477", arrowsize=0.7];
+  FixedInputs [label="3 Retained Compiled Integration Inputs\nfixed ELF/query and genuine raw-export hashes"];
+  StaticBytes [label="Relocation-Covered ELF Code Bytes\ncanonical AMD64 frame subset"];
+  RawLocations [label="Raw Function / CFA / PC Metadata\nno variable-name or candidate-value matching"];
+  RawCandidates [label="Preserved Per-Prediction Candidates\nlabels and raw logits", information_role="location_raw_candidates"];
+  Request [label="Location-Only Request", consumable=true];
+  Origins [label="Syntactic Write-Address Load Occurrences\nno object/index anchor or property outcome"];
+  Bundle [label="Distinct Location Bundle or Unavailable Record\nraw payload retained; no semantic roles"];
+  Views [label="A/B Hidden; C Top-1; D Top-K Scores\nindependent load occurrences; no selector integration", information_role="type_view"];
+  Records [label="3 Retained Projection Records\nprojection costs exclude historical inference"];
+  OldProof [label="Retained Semantic Mapping Bundles\npost-hoc identity audit only", information_role="retained_mapping_proof"];
+  Audit [label="Offline Binding Identity Comparison\nnot an input to mapping or projection"];
+  Report [label="Correspondence Boundary Report\nno property, neural-value or generalization claim"];
+
+  Snapshotting [kind=process, shape=ellipse, label="Frozen Inputs\nSnapshotting", role="location_snapshotting", zone="runtime", fillcolor="#EAF5EE"];
+  Corresponding [kind=process, shape=ellipse, label="Static CFA / Load Identities\nCorresponding", role="location_corresponding", zone="runtime", fillcolor="#EAF5EE"];
+  Binding [kind=process, shape=ellipse, label="Physical Location Records\nBinding", role="location_binding", zone="runtime", fillcolor="#EAF5EE"];
+  Projecting [kind=process, shape=ellipse, label="Independent Candidate Views\nProjecting", role="location_projecting", zone="runtime", fillcolor="#EAF5EE"];
+  Recording [kind=process, shape=ellipse, label="Complete Projection Attempts\nRecording", role="location_recording", zone="runtime", fillcolor="#EAF5EE"];
+  Comparing [kind=process, shape=ellipse, label="Post-Hoc Location Identities\nComparing", role="location_comparing", zone="evaluation", fillcolor="#FFF1E5"];
+  Reporting [kind=process, shape=ellipse, label="Restricted Boundary Findings\nReporting", role="reporting", zone="evaluation", fillcolor="#FFF1E5"];
+
+  FixedInputs -> Snapshotting [relation=instrument, label=requires, arrowhead=odot];
+  Snapshotting -> StaticBytes [relation=result, label=yields, arrowhead=onormal];
+  Snapshotting -> RawLocations [relation=result, label=yields, arrowhead=onormal];
+  Snapshotting -> RawCandidates [relation=result, label=yields, arrowhead=onormal];
+  Snapshotting -> Request [relation=result, label=yields, arrowhead=onormal];
+  Request -> Corresponding [relation=consumption, label=consumes, arrowhead=normal];
+  StaticBytes -> Corresponding [relation=instrument, label=requires, arrowhead=odot];
+  Corresponding -> Origins [relation=result, label=yields, arrowhead=onormal];
+  Origins -> Binding [relation=instrument, label=requires, arrowhead=odot];
+  RawLocations -> Binding [relation=instrument, label=requires, arrowhead=odot];
+  Binding -> Bundle [relation=result, label=yields, arrowhead=onormal];
+  Bundle -> Projecting [relation=instrument, label=requires, arrowhead=odot];
+  RawCandidates -> Projecting [relation=instrument, label=requires, arrowhead=odot];
+  Projecting -> Views [relation=result, label=yields, arrowhead=onormal];
+  Bundle -> Recording [relation=instrument, label=requires, arrowhead=odot];
+  Recording -> Records [relation=result, label=yields, arrowhead=onormal];
+  Records -> Comparing [relation=instrument, label=requires, arrowhead=odot];
+  OldProof -> Comparing [relation=instrument, label=requires, arrowhead=odot];
+  Comparing -> Audit [relation=result, label=yields, arrowhead=onormal];
+  Audit -> Reporting [relation=instrument, label=requires, arrowhead=odot];
+  Records -> Reporting [relation=instrument, label=requires, arrowhead=odot];
+  Reporting -> Report [relation=result, label=yields, arrowhead=onormal];
+}

@@ -1,0 +1,24 @@
+{
+  "schema": "symbai.compiled_query_specs.v1",
+  "scope": "two_authored_developer_queries_not_held_out",
+  "cases": [
+    {
+      "query_id": "offset_index",
+      "source": "offset_index.c",
+      "function_symbol": "case_write",
+      "object_symbol": "case_buffer",
+      "capacity": 8,
+      "input": {"register": "rdi", "minimum": 0, "maximum": 15},
+      "index_transform": {"operation": "add_constant", "constant": 4}
+    },
+    {
+      "query_id": "masked_index",
+      "source": "masked_index.c",
+      "function_symbol": "case_write",
+      "object_symbol": "case_buffer",
+      "capacity": 8,
+      "input": {"register": "rdi", "minimum": 0, "maximum": 15},
+      "index_transform": {"operation": "and_constant", "constant": 7}
+    }
+  ]
+}

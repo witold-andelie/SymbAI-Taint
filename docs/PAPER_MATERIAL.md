@@ -1,281 +1,93 @@
-# SymbAI-Taint — Paper / Talk Material
+# Research write-up: claims, evidence and missing experiments
 
-> Material for a technical talk and as a paper skeleton, plus an anticipated technical Q&A.
-> **Tone: honest, defensible, no overclaiming.** A technical audience sees through inflation; we trade
-> clear analysis assumptions and honest limitations for credibility.
->
-> One-line positioning: **a neuro-symbolic (GNN + symbolic execution + LLM) automated taint-analysis
-> system for stripped binaries.**
+Updated 13 November 2026, development v23. This replaces the earlier 13-stage talk
+outline as the current writing guide. Historical implementation/results remain in
+[GNN_INTEGRATION](GNN_INTEGRATION.md), [JULIET_PILOT](JULIET_PILOT.md) and Git history.
+It is a research plan, not a validated publication abstract.
 
----
+## Positioning
 
-## 1. Abstract
+Working title: **Neural Type Information for Property-Directed Binary Analysis Scheduling**.
 
-Taint analysis for program correctness on stripped binaries is hard because of **missing semantics**: there
-are no reliable cues for variable names, types, or function boundaries, so traditional function-name-based
-source-sink matching degrades when symbols are gone. We present **SymbAI-Taint**, a 13-stage pipeline that
-orchestrates three complementary capabilities: (1) **GNN type recovery** (integrating TYGR/GlowGNN) to
-recover pointer/buffer/struct semantics when debug information is absent; (2) **symbolic execution**
-(angr/claripy) to produce **mathematically verifiable hard evidence** for suspicious paths (e.g. that a
-`strncpy` size is in fact unconstrained, or that a `gets` is an unconditional stack overflow); and (3)
-**LLM adjudication** (a reasoning model with chain-of-thought) to make final source-sink decisions on top
-of hard evidence and a soft threshold, suppressing false positives. On 6 programs covering buffer
-overflow / format string / command injection / UAF / double-free, it reaches P/R/F1 = 100% (27/0/0)
-end-to-end; on a **real third-party benchmark (NIST Juliet)** the metrics honestly drop, and the GNN
-quantifiably lifts recall — which is the system's distinguishing value over pure heuristics.
+The project studies whether frozen neural type predictions can help a shared scheduler
+choose local program-analysis operations under an equal total budget. Neural information
+may influence priorities without changing symbolic semantics; that is a legitimate
+experimental question. A useful signal and an original algorithm are separate claims.
 
----
+RQ1 asks whether genuine type information adds end-to-end value over the same scheduler
+without it. RQ2 asks whether candidate sets and model scores add beyond Top-1. A, B, C
+and D are defined in the [frozen architecture](architecture.md). The first prototype
+requires no new neural training or LLM.
 
-## 2. Problem & Motivation
+## Defensible observations
 
-- **Why stripped binaries**: real-world targets (firmware, closed-source commercial software, compiled libraries) are
-  usually source-less and frequently `strip --strip-all`-ed. Program analysis must work at the binary level.
-- **Taint analysis depends on semantics**: source/sink identification traditionally relies on **function
-  names** (libc: `gets`/`strcpy`/`system`/`printf`). Dynamic (imported) symbols survive even `--strip-all`
-  (dynamic relocation needs them), but **local/custom function names are gone** → a custom unchecked buffer
-  operation becomes a nameless `sub_xxxx`, and name matching fails.
-- **The value of type semantics**: knowing that "the argument of `sub_4011e9` is a `char*` buffer written
-  out of bounds" is what lets us flag it as a sink candidate. **Type recovery** fills this gap.
-- **No single technique suffices**: the GNN gives types but no proof that a defect is reproducible; symbolic execution
-  gives constraints but suffers path explosion and lacks high-level semantics; the LLM has semantic
-  intuition but hallucinates. **Orchestrating all three** is what makes it robust.
-
-## 3. Analysis Assumptions & Scope — honest statement
-
-| Dimension | Assumption / scope |
-|---|---|
-| Input | x86-64 ELF; the current type-recovery stage needs DWARF (`-g`) to *locate* variables (see §8) |
-| Target bugs | buffer overflow, format string, command injection, UAF, double-free (memory-safety + injection) |
-| No guarantees | **neither sound nor complete**: heuristics + ML + probabilistic adjudication; the goal is high-quality bug finding, not formal verification |
-| Evaluation scale | 6 hand-written programs + a 38-case Juliet pilot — we explicitly do **not** claim this is large-scale validity evidence (§7, §8) |
-
----
-
-## 4. System Architecture (13-stage pipeline)
-
-```
-Source / Binary
- 1 Compile&strip   gcc -g → keep -g copy (type recovery) + stripped copy (analysis)
- 2 Ground Truth    extract expected bugs from source (scope-aware; evaluation only)
- 3 Code lifting    angr → VEX IR
- 4 CFG recovery    angr CFGFast
- 5 DFG + callgraph data flow + function calls
- 6 GNN types       ★ TYGR GlowGNN (official model) → per-variable char*/ptr/array/struct
- 7 Type injection  inject type metadata into TypedIR (PIE base-aligned)
- 8 Symbolic exec   angr/claripy, path prioritization + heuristic pruning
- 9 Taint analysis  ★ scope-aware source-sink + lifecycle state machine (UAF/double-free)
-10 Source-sink     path enumeration + reachability filter + .rodata format-string guard
-11 LLM adjudicate  ★ reasoning-model CoT over symbolic hard evidence + soft threshold
-12 Evaluation      P/R/F1 vs ground truth
-13 Reporting       JSON / Markdown
-```
-★ = the three core "intelligent" components.
-
-## 5. Core Technical Contributions
-
-### 5.1 Engineering the GNN type-recovery integration (neural component)
-- Integrates [TYGR](https://github.com/sefcom/TYGR)'s **GlowGNN**: graph message passing over the "glow"
-  computation graph derived from angr symbolic execution (nodes = values/ops, edges = VEX operation
-  classes), predicting the type at each variable location.
-- **Directly uses the official weights** trained on the real TYDA dataset (Gentoo C/C++ binaries),
-  yielding rich types (`char*`/`f32*`/`array`/`struct`).
-- **Key engineering challenge (defensible point)**: the official model is pinned to angr/pyvex 9.0.7491 +
-  PyG 1.7 — both because of whole-object pickle across PyG versions and because the **VEX edge-operation
-  vocabulary** must match training (giving `edge_dim = 44`). Solution: reproduce an isolated `tygr-orig`
-  environment, called from the main pipeline as a **subprocess** (see VERSION_COMPAT.md).
-- **PIE base alignment**: GNN types attach at DWARF `low_pc`; angr uses PIE-rebased addresses; we map via
-  `mapped_base` so types attach to the correct named CFG functions.
-
-### 5.2 Symbolic "hard evidence" (formal component)
-Assess potential defects using **verifiable evidence** from constraint solving:
-- `strncpy(dst, src, n)`: extract `n`'s symbolic constraints and prove `n` is **not bounded by dst's size**
-  (the safety illusion is broken).
-- `gets(buf)`: construct **unconditional stack-overflow** evidence (no upper bound on input length).
-These become **facts** handed to the LLM, preventing it from deciding in a vacuum.
-
-### 5.3 Scope-aware taint + lifecycle state machine
-- **Scope awareness** eliminates "phantom ground truth" — a global name-indexed map mislinks same-named
-  locals across functions (this once caused an apparent 83% recall). Both source-sink and GT extraction are
-  scope-isolated.
-- **Lifecycle state machine** models heap objects as `allocated → freed → use` to truly detect **UAF /
-  double-free** (not string matching).
-- **Conservative guards**: a `printf` whose format string points to a `.rodata` literal is not counted as a
-  format-string sink; data-flow paths unreachable from `main` are dropped.
-
-### 5.4 Engineering lessons for LLM adjudication (defensible point)
-- Uses a **reasoning model** for chain-of-thought adjudication of source-sink chains.
-- **Pitfall**: a reasoning model's hidden tokens count against `max_tokens`; at 1024 the visible JSON is
-  truncated to empty → parse fails → every path defaults to 0.5 / accept → silent failure. Fix:
-  `max_tokens ≥ 4096` + tolerant parsing + decision field first. This is real "use a reasoning model
-  correctly" experience.
-
-## 6. Implementation
-- Language/frameworks: Python; angr 9.2 (main) / 9.0.7491 (tygr-orig); PyTorch + PyG; claripy solving.
-- Dual environments: `angr-env` (modern, main pipeline) + `tygr-orig` (reproduced, official GNN), bridged
-  by subprocess. Reproducible via `output/tygr/build_orig_env.sh`.
-
-## 7. Evaluation — with honest framing
-
-### 7.0 Six hand-written programs
-| Program | Bug | P/R/F1 |
+| Evidence | Supported statement | Unsupported extension |
 |---|---|---|
-| vulnerable / buffer_overflow / format_string / command_injection / memory_vuln / taint_flow | overflow / format / cmd-inj / UAF+double-free / complex flows | all 100/100/100 |
+| Twelve authored ELF mechanisms | Restricted checker/contracts and failure handling can be exercised. | Generalization to real projects or benchmark superiority. |
+| Early real end-to-end probe | Genuine acquisition and charged timeouts work; no gain on that query. | A neural speedup. |
+| Complementary non-neural controls | Different local analyses resolve different known mechanisms; a fixed cascade is a strong control. | A novel analysis theory or neural contribution. |
+| Corrected v22.1 acquisition | Three functions in one retained ELF yield seven genuine variable outputs with guarded input/output identities. | Type accuracy, event mapping completeness or three independent programs. |
+| v23 exact collision | Two table queries share actual model inputs and all 75-class output rows despite different historical operation capabilities. | All neural methods are incapable of useful guidance. |
+| Cold acquisition 8.305 s; previous cascade total 2.162 s | Costs motivate checking deployment overhead. | A paired speed comparison, runtime bound or warm-service result. |
 
-- Aggregate TP/FP/FN = **27/0/0**.
-- **Honest note ①**: these are a toy benchmark and **cannot** be taken as large-scale validity evidence.
-  They verify that the components cooperate correctly, not real-world recall.
-- **Honest note ②**: these are only `--strip-debug` (names survive), so the 100% is mostly from name/
-  structure heuristics; **the GNN is not necessary for these cases**.
+The [evidence index](pilot_evidence.md) preserves failures and corrections. Raw local
+bundles and weights are excluded; the [reproducibility guide](REPRODUCIBILITY.md)
+states what a public checkout can run. Software tests and diagram validation establish
+implementation properties, not scientific novelty.
 
-### 7.1 The GNN's irreplaceable value (fully-stripped + detection)
-- **Semantic recovery** (`demo_fullstrip.py`): after `strip --strip-all`, names become `sub_xxxx`; the GNN
-  still recovers char*/struct/pointer semantics (even `main`'s argc/argv).
-- **Detection capability (full closed loop)**: a hand-rolled buffer copy `store_record` that calls no libc
-  — pure name/structure heuristics score **P/R/F1 = 0/0/0** (0 sinks, 0 paths); with GNN type-driven
-  detection it finds the sink, builds the `argv → store_record` path, and reaches **P/R/F1 = 1.0**.
+## Candidate contribution, still to be demonstrated
 
-### 7.2 Real benchmark pilot: NIST Juliet (the most important credibility evidence)
-38 cases selected from **NIST SARD Juliet C/C++ 1.3** (CWE121/122/134/78, matching our target bugs). Using
-Juliet's good/bad structure + `OMITGOOD/OMITBAD` macros to compile positive/negative binaries; positives
-should be detected, negatives not (see [JULIET_PILOT.md](JULIET_PILOT.md)).
+A future contribution would be a specific, reproducible selection mechanism whose
+incremental information and complete cost can be measured against strong alternatives.
+Combining a GNN, dependency graph and cost score is not itself evidence of novelty.
+Neither selection by uncertainty nor expected value divided by cost is an original
+principle on its own.
 
-**Four-way ablation** (LLM endpoint: FreeModel `gpt-5.4-mini`; the MiMo endpoint was blocked by 451
-cross-border isolation):
+Related-work assessment must examine Manta's demand-driven/context- and flow-sensitive
+type refinement, OSPREY's probabilistic type recovery, TYGR's neural representation,
+traditional binary type inference, CEGAR refinement selection and learned analysis
+scheduling. The detailed algorithmic overlap must be checked against primary papers
+before claiming a new method. This document does not make a first-of-its-kind claim.
 
-| Configuration | Precision | Recall | F1 |
-|---|---|---|---|
-| ① Standard (name/structure) | 0.794 | 0.711 | 0.750 |
-| ② Standard + LLM adjudication | 0.794 | 0.711 | 0.750 (no change) |
-| **③ + GNN type-driven** | **0.833** | **0.921** | **0.875** |
-| ④ + GNN type-driven + LLM | 0.522 | 0.921 | 0.667 ⬇ |
+## Minimum evaluation for a formal paper
 
-**Three key conclusions (incl. a negative result)**:
-1. **Metrics drop honestly**: from the 6-program 100% to a ~75% baseline on real data — honest, externally
-   meaningful (toy 100% does not extrapolate).
-2. **The GNN recall gain is real** (③): type-driven detection raises recall **0.711 → 0.921** (+21 pts),
-   recovering 8 **CWE121 stack overflows** (buffer index out-of-bounds writes with no libc sink name,
-   entirely missed by name/structure heuristics). This quantifies "the GNN is useful."
-3. **The LLM precision gain did not materialize in this configuration (negative result)**: in ② the LLM is
-   a no-op (filtered 0/7 false positives, killed 0/27 true positives); ④ naive stacking drops precision to
-   0.522. **Root cause**: the batch ablation fed the LLM only GNN-type evidence, **without the angr
-   symbolic constraints** (the hard evidence that distinguishes "safe" from "potentially invalid" sinks). So it
-   proves **"LLM + types-only = no-op," not "LLM is useless."** A full neuro-symbolic + LLM evaluation
-   (with symbolic hard evidence) on Juliet is the next step (§8).
+1. Freeze fixed property queries and modeling assumptions. Count all queries, including
+   failures, missing mappings, timeouts and unresolved cases.
+2. Split by program/project before tuning. The known authored panels remain development
+   controls; repeated runs and multiple variable rows do not increase sample independence.
+3. Hold B/C/D's selector, parameters, non-type features, operation set and checker fixed.
+   Compare hidden types, Top-1, Top-K without scores and Top-K with actual scores.
+4. Include traditional recovered types with the same selector, fixed cascades, structural
+   scheduling and confidence-only selection as appropriate reproducible controls.
+5. Separate information-only ablation from full acquisition cost. Report model/graph/mapping,
+   selection, checking, validation, memory and total wall time with explicit cache treatment.
+6. Report resolved queries, scoped exclusions, violations, unknowns, wrong decisions and
+   budget curves. Repetition measures runtime variability; it is not independent data.
+7. Treat neural scores as uncalibrated unless calibration is independently evaluated.
+   Do not tune on test labels or use neural labels to exclude feasible paths.
 
-## 8. Limitations — proactively exposed
-1. **Type recovery currently depends on DWARF to locate variables**: TYGR uses DWARF to find "where the
-   variables are," and the GNN predicts "what type they are." On a fully DWARF-less binary, a variable
-   recovery pass (angr `VariableRecovery` or similar) must run first — a known next step; currently we use
-   a `-g` copy. Honestly: the current demos hold under "a fully-stripped analysis binary + a DWARF-carrying
-   type-recovery binary."
-2. **LLM value not yet realized (negative result)**: the Juliet ablation shows the LLM (types-only) is a
-   no-op, and stacking with type-sinks hurts precision (§7.2). The root cause is the missing angr symbolic
-   evidence in batch; feeding it in is the next step.
-3. **Precision cost of type-driven sinks**: symmetric application produces many false positives on negatives
-   (P = 0.522). A stronger trigger is needed (in-function evidence of an unbounded write with a tainted
-   index), not "any char* parameter ⇒ sink."
-4. **Scale**: a 38-case Juliet pilot done (baseline F1 = 0.75 → GNN 0.875); still need hundreds of cases +
-   real-world defect/fix pairs, more CWEs and flow variants (02–54). Currently only single-file baseline variant `_01`.
-5. **LLM latency**: ~30–40 s/path, a throughput bottleneck.
-6. **Not sound/complete**: see the analysis assumptions.
+The initial information-value experiment should remain small and interpretable. A new
+benefit predictor or dependence-group optimizer is premature unless simpler controls
+show useful incremental information and cost headroom.
 
-## 9. Related Work & Novelty
-- **TYGR** (whose type inference we reuse): type inference only, not end-to-end defect analysis. Our
-  contribution is **orchestrating it into a neuro-symbolic taint pipeline** and solving its cross-version
-  engineering.
-- **ORACAL-style multimodal fusion**: architectural inspiration.
-- Classic taint (libdft/Triton/angr's own): purely static/dynamic, lacking high-level semantic adjudication.
-- **Novelty claim (restrained)**: not a new GNN or solver, but a **systematic method that orchestrates GNN
-  type semantics + symbolic hard evidence + LLM adjudication for stripped-binary defect discovery**,
-  plus a reproducible engineering implementation.
+## Scope wording
 
----
+Use “modeled witness” and “excluded within the declared query scope.” Native input
+replay is not implemented. A single path exclusion does not prove the entire query
+excluded; a scoped query exclusion does not prove the program correct.
 
-## 10. Anticipated Technical Q&A
+Use “DWARF-assisted acquisition,” rather than claiming end-to-end fully stripped type
+recovery. Ground-truth type labels are not supplied to the model, but variable-location
+metadata is still an input to extraction.
 
-> Principle: **admitting limits earns points**. The audience trusts a system that knows its boundaries.
+The legacy Juliet scores came from another pipeline and include asymmetric positive-only
+rechecking. Preserve them as historical observations, rather than citing them as RQ1/RQ2
+evidence or an unbiased neural gain. No journal quartile or acceptance outcome follows
+from the current pilot.
 
-**Q: Is 100% on 6 programs overfitting / meaningless?**
-A: Agreed — it only proves the components cooperate correctly (type recovery → injection → symbolic
-evidence → adjudication → evaluation, no bugs in the loop). So we **ran a real benchmark pilot**: NIST
-Juliet, 38 cases, with metrics honestly dropping to a **baseline F1 = 0.75 (R = 0.71)** — extrapolatable
-data. More importantly, **GNN type-driven detection raises recall to 0.92**, recovering 8 CWE121 stack
-overflows that libc-name matching entirely misses. We don't avoid the drop; we use it to quantify the GNN's
-value (§7.2). Next is scaling to hundreds of cases + real-world defect/fix pairs.
+## Next decision
 
-**Q: How much does the GNN actually help on real data?**
-A: On the Juliet pilot, **recall +21 pts (0.711 → 0.921), F1 +12.5 pts (0.750 → 0.875)**. The gain comes
-entirely from CWE121 stack overflows — buffer index out-of-bounds writes with no libc sink name, scored 0
-by name/structure heuristics, where the GNN-recovered char*/array types identify them as buffer sinks.
-Honest caveats: 1 `alloca+fgets` case makes TYGR's datagen symbolic execution assert (GNN falls back), and
-2 `vprintf` cases are format strings (out of type-sink scope) — known hardening points.
-
-**Q: Does your LLM adjudication actually help on the real benchmark? (ablation)**
-A: Honestly — in this configuration it did not deliver a precision gain; **this is a negative result**.
-On Juliet, standard+LLM F1 is unchanged (the LLM filtered 0/7 false positives and killed 0/27 true
-positives); GNN+type-sink+LLM actually drops precision from 0.833 to 0.522. **But the root cause is an
-experimental limitation, not the LLM being inherently useless**: to save time, the batch ablation fed the
-LLM **only GNN-type evidence, without the angr symbolic constraints** — and those constraints (whether a
-sink is bounded/safe) are exactly what would let the LLM reject the goodB2G "tainted source → safe sink"
-false positives. A full neuro-symbolic + LLM evaluation is an explicit next step. We list this negative
-result as roadmap item #1 rather than hiding it.
-
-**Q: Real-world binaries have no DWARF; how does your type recovery work?**
-A: Honestly, TYGR (and our current integration) uses DWARF to **locate variables**, then the GNN predicts
-their types. Without DWARF, a variable-recovery pass (angr VariableRecovery) must first produce variable
-locations to feed the GNN. The current demos use a `-g` copy for variable locations; the analysis binary
-itself may be fully stripped. Wiring in variable recovery is a clear engineering next step, not a
-theoretical barrier — the GNN's features come from the symbolic glow graph and don't depend on symbol names.
-
-**Q: Will the LLM hallucinate defects?**
-A: The LLM **does not decide alone** — it adjudicates on top of symbolic hard evidence + path scores and
-records its CoT for auditability. But we empirically found the opposite problem: **when evidence is
-insufficient, the LLM is biased toward "real"** (see the ablation), so it is more likely to miss "should be
-rejected" false positives than to invent bugs. The fix is to give it enough symbolic evidence to "reject,"
-rather than relying on its prior.
-
-**Q: Why TYGR instead of Ghidra/IDA type inference?**
-A: Ghidra/IDA type recovery is rule/data-flow heuristic; TYGR is a GNN **learned** on large real binaries,
-whose generalization to the stripped setting is its selling point. We also keep an interface to swap/compare
-models (env-var model switch).
-
-**Q: Why maintain two conda environments? Inelegant.**
-A: Because the official model is pinned to angr/pyvex 9.0.7491 + PyG 1.7 — both a cross-version pickle issue
-and a **VEX edge-vocabulary** issue (the model's feature dimension is locked). Forcing it into the modern
-environment either breaks pickle or mismatches features. Subprocess isolation of the two environments is the
-cleanest, most reproducible engineering choice. We also provide a modern-environment self-training fallback
-(Acc 0.887).
-
-**Q: Performance / scalability?**
-A: The bottleneck is LLM adjudication (~30–40 s/path). Optimizations: only call the LLM for "ambiguous"
-paths, batch them, or use a local model. GNN inference is ~10 it/s on CPU; symbolic execution is controlled
-by path prioritization + heuristic pruning.
-
-**Q: Soundness / completeness?**
-A: Neither is guaranteed. This is a bug-finding system, not a verifier. The design goal is high-quality
-discovery + low false positives (via symbolic hard evidence + adjudication), with explicit analysis assumptions.
-
-**Q: Reproducibility?**
-A: All versions are pinned (`environment.yml` + `req_rest.txt`), a one-click script builds `tygr-orig`, the
-official model lives in TYGR's `model/`. Docs: VERSION_COMPAT / GNN_INTEGRATION.
-
-**Q: How is this different from "wrapping an LLM"?**
-A: The LLM is only the 11th-stage adjudicator and depends on **structured formal/learned evidence** produced
-by the first 10 stages (VEX, CFG/DFG, GNN types, symbolic constraints). Remove that evidence and the LLM has
-nothing to judge on. The core is **evidence generation**, not prompting.
-
----
-
-## 11. Talk Takeaways (3 sentences)
-1. The bottleneck of stripped-binary defect analysis is **missing semantics**; we use **GNN type
-   recovery** to restore type semantics even under full stripping (demonstrated).
-2. We assess potential defects through explainable, auditable decisions with **symbolic hard evidence + LLM
-   adjudication** — though, honestly, the LLM precision gain is not yet realized on real benchmarks (a
-   negative result we report openly).
-3. We know our boundaries: toy scale, DWARF-locate dependency, LLM not yet delivering — these are clear,
-   in-progress next steps, not hidden weaknesses.
-
----
-*Companion docs: [GNN_INTEGRATION.md](GNN_INTEGRATION.md) (integration) · [VERSION_COMPAT.md](VERSION_COMPAT.md)
-(environment) · [JULIET_PILOT.md](JULIET_PILOT.md) (benchmark) · [STATUS.md](STATUS.md) (status) ·
-[architecture.md](architecture.md) (architecture)*
+The repair is complete. Retain the three typed cases as regression/cost controls and
+design a small independent panel with an explicit information-value hypothesis. If the
+same scheduler gains no stable end-to-end advantage, report that result and investigate
+its cause before increasing system complexity. See [STATUS](STATUS.md).

@@ -1,0 +1,49 @@
+digraph ModelInterface {
+  graph [rankdir=LR, labelloc=t, label="V18 Passive Frozen-Model Interface Audit\nSaved configuration and parameter shapes; no model input, projection or prediction",
+         protocol="symbai-selective-analysis-pilot-v1", view="model_interface"];
+  node [kind=object, shape=box, style=filled, fillcolor="#EFF6FF", color="#315A85", fontname="Arial", fontsize=11];
+  edge [fontname="Arial", fontsize=9, color="#526477", arrowsize=0.7];
+  Model [label="Pinned Frozen Checkpoint\nSHA-256 identity; no framework loading"];
+  Syntax [label="Three Retained V17 Graphs and Requests\ncomplete original identities"];
+  Source [label="Hashed Preprocessing / Graph / Readout Source\ncurrent interface evidence"];
+  Copies [label="Immutable Input and Source Snapshots"];
+  Passive [label="Passive Pickle Object / Storage Descriptors\nGLOBAL, REDUCE and BUILD are data"];
+  Config [label="Actual Saved Ordered Feature / Relation Config\nno default substitution"];
+  Shapes [label="Saved Layer and Parameter Shapes\nno tensor-array interpretation"];
+  Domain [label="Declared vs Saved-Layer Relation Domains\nnot observed historical edge IDs"];
+  Inventory [label="V17 Literals, Missing Value Semantics and Edges\nno zero or unknown-edge filling"];
+  Readouts [label="Event Readout Candidates Without Projection\nno chosen GlowVar groups / output rows"];
+  Findings [label="Context / Annotation / Feature / Row Evidence\nsource code is not an executed projection"];
+  Readiness [label="Direct-Bridge Compatibility Report\nstructural checks do not prove semantic compatibility"];
+
+  Snapshotting [kind=process, shape=ellipse, label="Pinned Inputs and Evidence\nSnapshotting", role="interface_snapshotting", zone="evaluation", fillcolor="#FFF1E5"];
+  Parsing [kind=process, shape=ellipse, label="Bounded Symbolic Metadata\nParsing", role="interface_passive_parsing", zone="evaluation", fillcolor="#FFF1E5"];
+  Extracting [kind=process, shape=ellipse, label="Saved Configuration and Tensor Descriptors\nExtracting", role="interface_extracting", zone="evaluation", fillcolor="#FFF1E5"];
+  Checking [kind=process, shape=ellipse, label="Directional Relation Domain Coverage\nChecking", role="interface_domain_checking", zone="evaluation", fillcolor="#FFF1E5"];
+  Inventorying [kind=process, shape=ellipse, label="Unprojected Syntax and Readout Events\nInventorying", role="interface_inventorying", zone="evaluation", fillcolor="#FFF1E5"];
+  Inspecting [kind=process, shape=ellipse, label="Hashed Feature and Context Semantics\nInspecting", role="interface_source_inspecting", zone="evaluation", fillcolor="#FFF1E5"];
+  Reporting [kind=process, shape=ellipse, label="Missing Structural and Semantic Contracts\nReporting", role="evaluating", zone="evaluation", fillcolor="#FFF1E5"];
+
+  Model -> Snapshotting [relation=instrument, label=requires, arrowhead=odot];
+  Syntax -> Snapshotting [relation=instrument, label=requires, arrowhead=odot];
+  Source -> Snapshotting [relation=instrument, label=requires, arrowhead=odot];
+  Snapshotting -> Copies [relation=result, label=yields, arrowhead=onormal];
+  Copies -> Parsing [relation=instrument, label=requires, arrowhead=odot];
+  Parsing -> Passive [relation=result, label=yields, arrowhead=onormal];
+  Passive -> Extracting [relation=instrument, label=requires, arrowhead=odot];
+  Extracting -> Config [relation=result, label=yields, arrowhead=onormal];
+  Extracting -> Shapes [relation=result, label=yields, arrowhead=onormal];
+  Config -> Checking [relation=instrument, label=requires, arrowhead=odot];
+  Shapes -> Checking [relation=instrument, label=requires, arrowhead=odot];
+  Checking -> Domain [relation=result, label=yields, arrowhead=onormal];
+  Copies -> Inventorying [relation=instrument, label=requires, arrowhead=odot];
+  Inventorying -> Inventory [relation=result, label=yields, arrowhead=onormal];
+  Inventorying -> Readouts [relation=result, label=yields, arrowhead=onormal];
+  Copies -> Inspecting [relation=instrument, label=requires, arrowhead=odot];
+  Inspecting -> Findings [relation=result, label=yields, arrowhead=onormal];
+  Domain -> Reporting [relation=instrument, label=requires, arrowhead=odot];
+  Inventory -> Reporting [relation=instrument, label=requires, arrowhead=odot];
+  Readouts -> Reporting [relation=instrument, label=requires, arrowhead=odot];
+  Findings -> Reporting [relation=instrument, label=requires, arrowhead=odot];
+  Reporting -> Readiness [relation=result, label=yields, arrowhead=onormal];
+}

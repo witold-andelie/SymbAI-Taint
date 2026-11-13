@@ -1,5 +1,16 @@
 # Implementation Log
 
+> **Historical 13-stage integration log.** The topic-ordered notes below retain the
+> decisions and interpretations of that implementation, not the current pilot's claims.
+> Current state: [STATUS](STATUS.md); current reproduction: [REPRODUCIBILITY](REPRODUCIBILITY.md).
+> Later corrections: saved preprocessing declares 60 relation IDs while the model's
+> eight RGCN layers have capacity 44; actual input domains must be guarded. See
+> [v18](architecture/pilot_revision_v18.md) and the [v19 erratum](architecture/pilot_revision_v19_erratum.md).
+> The current v22.1 location repair uses an external adapter and leaves original TYGR
+> unchanged; old local source patches below are not instructions for that acquisition.
+> Historical "irreplaceable" and recall interpretations do not establish neural necessity
+> or gains under the frozen A-D protocol.
+
 > A detailed record of the implementation process, technical decisions, and pitfalls of genuinely
 > integrating **GNN type recovery** into the taint-analysis pipeline and validating it on a real benchmark.
 > Organized by topic (roughly chronological). Companion docs:

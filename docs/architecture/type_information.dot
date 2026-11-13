@@ -1,0 +1,43 @@
+digraph TypeInformation {
+  graph [rankdir=LR, labelloc=t, label="V23 Retained Type-Information Collision Audit\nKnown development data; no new inference, property execution or selector",
+         protocol="symbai-selective-analysis-pilot-v1", view="type_information"];
+  node [kind=object, shape=box, style=filled, fillcolor="#EFF6FF", color="#315A85", fontname="Arial", fontsize=11];
+  edge [fontname="Arial", fontsize=9, color="#526477", arrowsize=0.7];
+  Archive [label="Anchored V22.1 Raw Acquisition, Three Queries and Source/Input Ledgers"];
+  Verified [label="Verified Adapter/API Trace and Guarded Whole-Variable Logits"];
+  Groups [label="Original Native Group Order\nno name/address/role feature"];
+  Views [label="Separate Top-1 / Top-K Scores / Full Retained Logit Representations"];
+  Tensors [label="Exact Prepared and Actual Collated Model Inputs"];
+  Equality [label="Three Unordered Pair Equality Records\ninput and output signatures kept separate"];
+  Historical [label="Historical V21 Single-Operation Status Vectors", data_role="evaluation_only"];
+  Receipts [label="Paid V22.1 Acquisition and Historical Fixed-Cascade Receipts", data_role="evaluation_only"];
+  Collisions [label="Equal Neural Views with Differing Historical Capabilities"];
+  Costs [label="Separate-Run Descriptive Costs\nnot paired end-to-end or speedup"];
+  Report [label="Scoped Information-Readiness Report\nno RQ1/RQ2 success or general impossibility claim"];
+
+  Validating [kind=process, shape=ellipse, role="type_audit_validating", zone="evaluation", label="Retained Acquisition Evidence\nValidating", fillcolor="#FFF1E5"];
+  Projecting [kind=process, shape=ellipse, role="type_audit_projecting", zone="evaluation", label="Identity-Free Whole-Function Views\nProjecting", fillcolor="#FFF1E5"];
+  Comparing [kind=process, shape=ellipse, role="type_audit_comparing", zone="evaluation", label="Exact Representations and Tensors\nComparing", fillcolor="#FFF1E5"];
+  Joining [kind=process, shape=ellipse, role="type_audit_joining", zone="evaluation", label="Frozen Historical Capabilities\nJoining", fillcolor="#FFF1E5"];
+  Costing [kind=process, shape=ellipse, role="type_audit_costing", zone="evaluation", label="Separate Paid Stages\nReporting", fillcolor="#FFF1E5"];
+  Reporting [kind=process, shape=ellipse, role="evaluating", zone="evaluation", label="Limited Information and Cost Evidence\nReporting", fillcolor="#FFF1E5"];
+
+  Archive -> Validating [relation=instrument, label=requires, arrowhead=odot];
+  Validating -> Verified [relation=result, label=yields, arrowhead=onormal];
+  Validating -> Groups [relation=result, label=yields, arrowhead=onormal];
+  Validating -> Tensors [relation=result, label=yields, arrowhead=onormal];
+  Verified -> Projecting [relation=instrument, label=requires, arrowhead=odot];
+  Groups -> Projecting [relation=instrument, label=requires, arrowhead=odot];
+  Projecting -> Views [relation=result, label=yields, arrowhead=onormal];
+  Views -> Comparing [relation=instrument, label=requires, arrowhead=odot];
+  Tensors -> Comparing [relation=instrument, label=requires, arrowhead=odot];
+  Comparing -> Equality [relation=result, label=yields, arrowhead=onormal];
+  Equality -> Joining [relation=instrument, label=requires, arrowhead=odot];
+  Historical -> Joining [relation=instrument, label=requires, arrowhead=odot];
+  Joining -> Collisions [relation=result, label=yields, arrowhead=onormal];
+  Receipts -> Costing [relation=instrument, label=requires, arrowhead=odot];
+  Costing -> Costs [relation=result, label=yields, arrowhead=onormal];
+  Collisions -> Reporting [relation=instrument, label=requires, arrowhead=odot];
+  Costs -> Reporting [relation=instrument, label=requires, arrowhead=odot];
+  Reporting -> Report [relation=result, label=yields, arrowhead=onormal];
+}

@@ -1,5 +1,6 @@
-# OPM: AI-Enhanced Automated Taint Analysis
-# Python 3.11+ Dependencies
+# Legacy 13-stage pipeline dependencies (modern runtime; not the original TYGR stack).
+# Active model-free pilot: benchmarks/selective_analysis/requirements.txt
+# Measured runtime boundaries and native model requirements: docs/VERSION_COMPAT.md
 
 # Core Binary Analysis
 angr>=9.2.212

@@ -1,0 +1,65 @@
+digraph FrameBoundsGate {
+  graph [rankdir=TB, bgcolor="white", pad="0.3", nodesep="0.35", ranksep="0.5",
+         fontname="Arial", fontsize=18, labelloc=t,
+         label="SymbAI-Taint | Development v9 compiler-frame bounds\nPaid entry context and fresh validation - fixed controls, no neural inputs",
+         protocol="symbai-selective-analysis-pilot-v1", view="frame_bounds"];
+  node [kind=object, shape=box, style=filled, fillcolor="#EFF6FF", color="#315A85", fontname="Arial", fontsize=11];
+  edge [fontname="Arial", fontsize=9, color="#526477", arrowsize=0.7];
+
+  Binary [label="Fixed Binary Artifact"];
+  Query [label="Fixed Query\nfirst-write scope and input ranges"];
+  EntryModel [label="Reference Function-Entry Model\nexisting BinaryChecker"];
+  Project [label="Paid Reference Project\nno executed prefix"];
+  FrameContext [label="Checked Entry Context\nunique RSP; stack/image/object separation"];
+  StageRequest [label="Fixed Control Stage Request", consumable=true];
+  StageState [label="Control Stage and Budget State", stateful=true, states="pending,local_attempted,resolved,exhausted"];
+  Unchecked [label="Unchecked Frame Outcome\ninterval certificate or unknown", consumable=true];
+  Validated [label="Validated Scoped Outcome\nexclusion / violation / unknown"];
+  Ledger [label="Measured Run Ledger\npreparation, checking, validation, finalization", stateful=true, states="open,closed"];
+  RunBundle [label="27 Planned Cold-Process Records\n3 existing developer queries x 3 methods x 3 repeats"];
+  Gold [label="Offline Expected Outcomes", data_role="evaluation_only"];
+  Report [label="Applicability and Fixed-Control Report\nno neural or held-out claim"];
+
+  Preparing [kind=process, shape=ellipse, label="Reference Project\nPreparing", role="preparing", zone="runtime", fillcolor="#EAF5EE"];
+  ContextChecking [kind=process, shape=ellipse, label="Entry Stack Context\nChecking", role="frame_context_checking", zone="runtime", fillcolor="#EAF5EE"];
+  Selecting [kind=process, shape=ellipse, label="Fixed Control Stage\nSelecting", role="fixed_selecting", zone="runtime", fillcolor="#EAF5EE"];
+  FrameChecking [kind=process, shape=ellipse, label="Restricted Frame Intervals\nChecking", role="frame_checking", zone="runtime", guard="request_is_frame_bounds", fillcolor="#EAF5EE"];
+  Rechecking [kind=process, shape=ellipse, label="Fresh Entry Context and Bytes\nRechecking", role="frame_rechecking", zone="runtime", fillcolor="#EAF5EE"];
+  FullChecking [kind=process, shape=ellipse, label="Fresh Expanded Paths Checking\nand Result Validating", role="full_checking", zone="runtime", guard="request_is_expanded_paths", fillcolor="#EAF5EE"];
+  Updating [kind=process, shape=ellipse, label="Stage and Cost\nUpdating", role="updating", zone="runtime", fillcolor="#EAF5EE"];
+  Finalizing [kind=process, shape=ellipse, label="Cold-Process Run\nFinalizing", role="finalizing", zone="runtime", fillcolor="#EAF5EE"];
+  Evaluating [kind=process, shape=ellipse, label="Offline Controls\nEvaluating", role="evaluating", zone="evaluation", fillcolor="#FFF1E5"];
+
+  Binary -> Preparing [relation=instrument, label=requires, arrowhead=odot];
+  Query -> Preparing [relation=instrument, label=requires, arrowhead=odot];
+  EntryModel -> Preparing [relation=instrument, label=requires, arrowhead=odot];
+  Preparing -> Project [relation=result, label=yields, arrowhead=onormal];
+  Project -> ContextChecking [relation=instrument, label=requires, arrowhead=odot];
+  Query -> ContextChecking [relation=instrument, label=requires, arrowhead=odot];
+  ContextChecking -> FrameContext [relation=result, label=yields, arrowhead=onormal];
+  StageState -> Selecting [relation=instrument, label=requires, arrowhead=odot];
+  Selecting -> StageRequest [relation=result, label=yields, arrowhead=onormal];
+  StageRequest -> FrameChecking [relation=consumption, label=consumes, arrowhead=normal];
+  Binary -> FrameChecking [relation=instrument, label=requires, arrowhead=odot];
+  Query -> FrameChecking [relation=instrument, label=requires, arrowhead=odot];
+  FrameContext -> FrameChecking [relation=instrument, label=requires, arrowhead=odot];
+  FrameChecking -> Unchecked [relation=result, label=yields, arrowhead=onormal];
+  Unchecked -> Rechecking [relation=consumption, label=consumes, arrowhead=normal];
+  Binary -> Rechecking [relation=instrument, label=requires, arrowhead=odot];
+  Query -> Rechecking [relation=instrument, label=requires, arrowhead=odot];
+  EntryModel -> Rechecking [relation=instrument, label=requires, arrowhead=odot];
+  Rechecking -> Validated [relation=result, label=yields, arrowhead=onormal];
+  StageRequest -> FullChecking [relation=consumption, label=consumes, arrowhead=normal];
+  Project -> FullChecking [relation=instrument, label=requires, arrowhead=odot];
+  Query -> FullChecking [relation=instrument, label=requires, arrowhead=odot];
+  FullChecking -> Validated [relation=result, label=yields, arrowhead=onormal];
+  Validated -> Updating [relation=instrument, label=requires, arrowhead=odot];
+  StageState -> Updating [relation=effect, label=affects, arrowhead=normal, arrowtail=onormal, dir=both];
+  Ledger -> Updating [relation=effect, label=affects, arrowhead=normal, arrowtail=onormal, dir=both];
+  Ledger -> Finalizing [relation=instrument, label=requires, arrowhead=odot];
+  StageState -> Finalizing [relation=instrument, label=requires, arrowhead=odot];
+  Finalizing -> RunBundle [relation=result, label=yields, arrowhead=onormal];
+  RunBundle -> Evaluating [relation=instrument, label=requires, arrowhead=odot];
+  Gold -> Evaluating [relation=instrument, label=requires, arrowhead=odot];
+  Evaluating -> Report [relation=result, label=yields, arrowhead=onormal];
+}

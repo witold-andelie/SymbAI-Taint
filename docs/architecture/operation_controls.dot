@@ -1,0 +1,64 @@
+digraph SymbAIOperationControls {
+  graph [rankdir=TB, bgcolor="white", pad="0.35", nodesep="0.4", ranksep="0.6",
+         fontname="Arial", fontsize=18, labelloc=t,
+         label="SymbAI-Taint | Development v4 controls\nOPM diagnostic view - separate from frozen A-D selection",
+         protocol="symbai-selective-analysis-pilot-v1", view="operation_controls"];
+  node [kind="object", shape=box, style="filled", fillcolor="#EFF6FF", color="#315A85",
+        fontname="Arial", fontsize=12, margin="0.16,0.10"];
+  edge [fontname="Arial", fontsize=9, color="#526477", arrowsize=0.75];
+
+  BinaryArtifact [label="Binary Artifact"];
+  QueryManifest [label="Query Manifest\nfixed scope + input ranges + object bounds"];
+  ControlSpecification [label="Control Specification\nexpanded only / bounds only / bounds then expanded"];
+  RunState [label="Control Run State\nfixed stage + evidence + remaining budget", stateful="true", states="ready,running,stopped"];
+  RunLedger [label="Run Ledger\npaid preparation + checking + validation", stateful="true", states="recording,finalized"];
+  ActionRequest [label="Control Action Request\noperation + fresh entry", consumable="true"];
+  UncheckedOutcome [label="Unchecked Outcome\ninterval certificate / modeled result / unknown", consumable="true"];
+  ValidatedOutcome [label="Validated Outcome\nfresh abstract recheck / modeled replay / unknown", consumable="true"];
+  RunBundle [label="Control Run Bundle"];
+  ReferenceRuns [label="Frozen B Run Bundle\nmeasured separately on the same queries"];
+  GoldLabels [label="Gold Labels\noffline evaluation only", data_role="evaluation_only", fillcolor="#FFF1E5", color="#B76B2E"];
+  GateReport [label="Operation Gate Report\ncoverage + errors + complete costs"];
+
+  ControlInitializing [kind="process", shape=ellipse, label="Control\nInitializing", role="initializing", zone="runtime", fillcolor="#EAF5EE", color="#33704B"];
+  StageSelecting [kind="process", shape=ellipse, label="Fixed Stage\nSelecting", role="control_selecting", zone="runtime", guard="budget_available AND stage_eligible", fillcolor="#EAF5EE", color="#33704B"];
+  LocalBoundsExecuting [kind="process", shape=ellipse, label="Local Bounds\nExecuting", role="checking", zone="runtime", guard="requested_operation_is_local_bounds", fillcolor="#EAF5EE", color="#33704B"];
+  ExpandedExecuting [kind="process", shape=ellipse, label="Expanded Paths\nExecuting", role="checking", zone="runtime", guard="requested_operation_is_expanded_paths", fillcolor="#EAF5EE", color="#33704B"];
+  EvidenceValidating [kind="process", shape=ellipse, label="Fresh Evidence\nValidating", role="validating", zone="runtime", fillcolor="#EAF5EE", color="#33704B"];
+  StateUpdating [kind="process", shape=ellipse, label="Stage and Cost\nUpdating", role="updating", zone="runtime", fillcolor="#EAF5EE", color="#33704B"];
+  ControlFinalizing [kind="process", shape=ellipse, label="Control\nFinalizing", role="finalizing", zone="runtime", guard="resolved OR exhausted OR no_stage", fillcolor="#EAF5EE", color="#33704B"];
+  GateEvaluating [kind="process", shape=ellipse, label="Operation Gate\nEvaluating", role="evaluating", zone="evaluation", fillcolor="#FFF1E5", color="#B76B2E"];
+
+  QueryManifest -> ControlInitializing [relation="instrument", label="requires", arrowhead=odot];
+  ControlSpecification -> ControlInitializing [relation="instrument", label="requires", arrowhead=odot];
+  ControlInitializing -> RunState [relation="result", label="yields", arrowhead=onormal];
+  ControlInitializing -> RunLedger [relation="result", label="yields", arrowhead=onormal];
+  ControlSpecification -> StageSelecting [relation="instrument", label="requires", arrowhead=odot];
+  RunState -> StageSelecting [relation="instrument", label="requires", arrowhead=odot];
+  StageSelecting -> ActionRequest [relation="result", label="yields", arrowhead=onormal];
+
+  ActionRequest -> LocalBoundsExecuting [relation="consumption", label="consumes", arrowhead=normal];
+  BinaryArtifact -> LocalBoundsExecuting [relation="instrument", label="requires", arrowhead=odot];
+  QueryManifest -> LocalBoundsExecuting [relation="instrument", label="requires", arrowhead=odot];
+  LocalBoundsExecuting -> UncheckedOutcome [relation="result", label="yields", arrowhead=onormal];
+  ActionRequest -> ExpandedExecuting [relation="consumption", label="consumes", arrowhead=normal];
+  BinaryArtifact -> ExpandedExecuting [relation="instrument", label="requires", arrowhead=odot];
+  QueryManifest -> ExpandedExecuting [relation="instrument", label="requires", arrowhead=odot];
+  ExpandedExecuting -> UncheckedOutcome [relation="result", label="yields", arrowhead=onormal];
+
+  UncheckedOutcome -> EvidenceValidating [relation="consumption", label="consumes", arrowhead=normal];
+  BinaryArtifact -> EvidenceValidating [relation="instrument", label="requires", arrowhead=odot];
+  QueryManifest -> EvidenceValidating [relation="instrument", label="requires", arrowhead=odot];
+  EvidenceValidating -> ValidatedOutcome [relation="result", label="yields", arrowhead=onormal];
+  ValidatedOutcome -> StateUpdating [relation="consumption", label="consumes", arrowhead=normal];
+  RunState -> StateUpdating [relation="effect", label="affects", dir=both, arrowhead=normal, arrowtail=onormal, constraint=false];
+  RunLedger -> StateUpdating [relation="effect", label="affects", dir=both, arrowhead=normal, arrowtail=onormal, constraint=false];
+  RunState -> ControlFinalizing [relation="instrument", label="requires", arrowhead=odot];
+  RunLedger -> ControlFinalizing [relation="effect", label="affects", dir=both, arrowhead=normal, arrowtail=onormal];
+  ControlFinalizing -> RunBundle [relation="result", label="yields", arrowhead=onormal];
+  RunBundle -> GateEvaluating [relation="instrument", label="requires", arrowhead=odot];
+  ReferenceRuns -> GateEvaluating [relation="instrument", label="requires", arrowhead=odot];
+  QueryManifest -> GateEvaluating [relation="instrument", label="requires", arrowhead=odot];
+  GoldLabels -> GateEvaluating [relation="instrument", label="requires", arrowhead=odot];
+  GateEvaluating -> GateReport [relation="result", label="yields", arrowhead=onormal];
+}

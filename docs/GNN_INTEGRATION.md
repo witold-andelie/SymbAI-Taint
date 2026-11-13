@@ -1,10 +1,13 @@
 # GNN Type-Recovery Integration
 
-> This document records the changes, rationale, reproduction steps, and known limitations of genuinely
-> integrating **GNN type recovery** into the taint-analysis pipeline.
-> In one line: the GNN (TYGR's GlowGNN) was previously an **empty shell** (Stage 6 type recovery always
-> output 0). It now works using TYGR's **official pretrained model**, and the full pipeline reaches
-> P/R/F1 = 1.0.
+> **Legacy 13-stage implementation record.** Results below use the earlier pipeline,
+> not the frozen A-D scheduling protocol. The small examples and asymmetric Juliet
+> recheck do not establish neural necessity, general accuracy or RQ1/RQ2.
+> Current scope/results: [STATUS](STATUS.md); architecture: [architecture.md](architecture.md);
+> public reproduction: [REPRODUCIBILITY](REPRODUCIBILITY.md).
+> The active v22.1 repair is external to unchanged upstream source; it supersedes old
+> source-patching instructions for current acquisitions. Current type locations remain
+> DWARF-assisted, even when a separate analysis copy is stripped.
 
 ---
 
@@ -33,9 +36,12 @@ The official model was trained and pickled in TYGR's original environment (see
 
 Two incompatibilities:
 1. **Pickle load fails**: PyG 1.7 → 2.7 changed internal classes (`Inspector._cls`), so `torch.load` fails.
-2. **Feature vocabulary mismatch**: the model's graph features come from **angr/pyvex 9.0.7491** (its edge
-   operation vocabulary is exactly 44); modern angr datagen produces features whose dimension does not match
-   (`index out of bounds for size 44`).
+2. **Feature/edge contract mismatch**: an earlier run encountered an index beyond 44.
+   The later passive audit found a saved 60-ID preprocessing domain versus capacity 44
+   in all eight saved RGCN layers. This is not proof that old pyvex has exactly 44 edge
+   operations. Actual input IDs need validation in either runtime. See the
+   [model audit](architecture/pilot_revision_v18.md) and
+   [native encoder correction](architecture/pilot_revision_v19_erratum.md).
 
 **Conclusion**: to use the official model, the **entire TYGR original environment must be faithfully
 reproduced**, rather than forcing adaptation in the modern environment.
@@ -98,7 +104,7 @@ source.c
  └─Stage10+ taint analysis / symbolic evidence / evaluation
 ```
 
-## 5. Current effect (memory_vuln.c, full pipeline)
+## 5. Historical example (memory_vuln.c, legacy full pipeline)
 ```
 Stage 6  GNN type recovery → 30 functions (char*/array)
 Stage 7  type injection    → 86 typed variables   (was 0)
@@ -106,7 +112,7 @@ Stage 10 taint             → 4 sources / 11 sinks / 29 paths + UAF/double-free
 Stage 12 evaluation        → P=1.0  R=1.0  F1=1.0
 ```
 
-## 5b. Evidence of the GNN's irreplaceable value (fully-stripped)
+## 5b. Historical stripped-copy demonstration with a debug companion
 
 Fully stripping `memory_vuln` with `strip --strip-all` (erasing `.symtab`, so all local function names are
 gone), then running GNN type recovery (script `output/tygr/demo_fullstrip.py`):
@@ -118,12 +124,13 @@ gone), then running GNN type recovery (script `output/tygr/demo_fullstrip.py`):
 | `sub_401354` | safe_memory | **char\*, char\*, char\*** |
 | `main` | main | **int32, char\*, char\*** (argc/argv) |
 
-**Conclusion**: after full stripping, function names are entirely lost — pure "name matching + structure
-heuristics" sees only meaningless `sub_xxxx`; the GNN still accurately labels each nameless function as
-handling char* buffers / pointers / structs. **On a fully-stripped binary, the GNN is the only source of
-type/buffer semantics** — this is its core value beyond source/symbol-level heuristics.
+The stripped analysis copy loses local function names, while the type pass uses a
+DWARF-carrying companion to locate variables. The displayed predictions illustrate
+integration, not measured type accuracy or a fully stripped end-to-end pipeline.
+They do not show that neural recovery is the only source of type/buffer information;
+traditional recovery and structural baselines remain necessary comparisons.
 
-## 6. Known Limitations / Next Steps
+## 6. Historical limitations and proposed next steps
 1. **PIE base alignment (✅ solved)** — `_recover_with_gnn` now bridges DWARF `low_pc` and angr's rebased
    addresses (verification `verify_base_align.py`); 6-program regression-free (all 1.0).
 2. **Type-driven sink detection (✅ implemented + closed loop)** — `_find_sinks_by_types` (`OPM_TYPE_SINKS=1`,

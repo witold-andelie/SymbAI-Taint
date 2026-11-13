@@ -1,0 +1,68 @@
+digraph SymbAIScheduling {
+  graph [rankdir=TB, bgcolor="white", pad="0.35", nodesep="0.4", ranksep="0.6",
+         fontname="Arial", fontsize=18, labelloc=t,
+         label="SymbAI-Taint | Fixed-query analysis\nOPM detail - A fixed; B/C/D share one selector",
+         protocol="symbai-selective-analysis-pilot-v1", view="scheduling", refines="AnalysisRunning"];
+  node [kind="object", shape=box, style="filled", fillcolor="#EFF6FF", color="#315A85",
+        fontname="Arial", fontsize=12, margin="0.16,0.10"];
+  edge [fontname="Arial", fontsize=9, color="#526477", arrowsize=0.75];
+
+  ProgramFacts [label="Program Facts", interface="input"];
+  QueryManifest [label="Query Manifest", interface="input"];
+  OperationCatalog [label="Operation Catalog", interface="input"];
+  TypeFeatureView [label="Type Feature View\nlabels + scores + candidate diversity", information_role="type_view", interface="input"];
+  RunSpecification [label="Run Specification\nvariant + regime + budget + seed", interface="input"];
+  FrozenProtocol [label="Frozen Protocol", interface="input"];
+  PreparationCosts [label="Preparation Costs", stateful="true", states="collecting,complete", interface="input"];
+  RunState [label="Run State\ncheckpoint + evidence + paid prefix + budget", stateful="true", states="ready,running,stopped"];
+  RunLedger [label="Run Ledger\nactions + evidence + measured costs", stateful="true", states="recording,finalized"];
+  ActionRequest [label="Action Request\noperation + targets + checkpoint", consumable="true"];
+  UncheckedOutcome [label="Unchecked Outcome", consumable="true"];
+  ValidatedOutcome [label="Validated Outcome\nevidence / no progress / failure", consumable="true"];
+  RunBundle [label="Run Bundle", interface="output"];
+
+  RunInitializing [kind="process", shape=ellipse, label="Run\nInitializing", role="initializing", zone="runtime", fillcolor="#EAF5EE", color="#33704B"];
+  ActionSelecting [kind="process", shape=ellipse, label="Action\nSelecting", role="selecting", zone="runtime", guard="running AND eligible AND budget_available", fillcolor="#DCEFE3", color="#33704B", penwidth=2];
+  OperationExecuting [kind="process", shape=ellipse, label="Local Operation\nExecuting", role="checking", zone="runtime", fillcolor="#EAF5EE", color="#33704B"];
+  EvidenceValidating [kind="process", shape=ellipse, label="Evidence\nValidating", role="validating", zone="runtime", fillcolor="#EAF5EE", color="#33704B"];
+  StateUpdating [kind="process", shape=ellipse, label="Checkpoint and Cost\nUpdating", role="updating", zone="runtime", fillcolor="#EAF5EE", color="#33704B"];
+  QueryFinalizing [kind="process", shape=ellipse, label="Query\nFinalizing", role="finalizing", zone="runtime", guard="resolved OR exhausted OR no_eligible_operation OR aborted", fillcolor="#EAF5EE", color="#33704B"];
+
+  RunSpecification -> RunInitializing [relation="instrument", label="requires", arrowhead=odot];
+  QueryManifest -> RunInitializing [relation="instrument", label="requires", arrowhead=odot];
+  FrozenProtocol -> RunInitializing [relation="instrument", label="requires", arrowhead=odot];
+  PreparationCosts -> RunInitializing [relation="instrument", label="requires", arrowhead=odot];
+  RunInitializing -> RunState [relation="result", label="yields", arrowhead=onormal];
+  RunInitializing -> RunLedger [relation="result", label="yields", arrowhead=onormal];
+
+  ProgramFacts -> ActionSelecting [relation="instrument", label="requires", arrowhead=odot];
+  QueryManifest -> ActionSelecting [relation="instrument", label="requires", arrowhead=odot];
+  OperationCatalog -> ActionSelecting [relation="instrument", label="requires", arrowhead=odot];
+  TypeFeatureView -> ActionSelecting [relation="instrument", label="requires", arrowhead=odot];
+  RunSpecification -> ActionSelecting [relation="instrument", label="requires", arrowhead=odot];
+  FrozenProtocol -> ActionSelecting [relation="instrument", label="requires", arrowhead=odot];
+  RunState -> ActionSelecting [relation="instrument", label="requires", arrowhead=odot];
+  ActionSelecting -> ActionRequest [relation="result", label="yields", arrowhead=onormal];
+
+  ActionRequest -> OperationExecuting [relation="consumption", label="consumes", arrowhead=normal];
+  ProgramFacts -> OperationExecuting [relation="instrument", label="requires", arrowhead=odot];
+  RunState -> OperationExecuting [relation="instrument", label="requires", arrowhead=odot];
+  RunSpecification -> OperationExecuting [relation="instrument", label="requires", arrowhead=odot];
+  OperationExecuting -> UncheckedOutcome [relation="result", label="yields", arrowhead=onormal];
+
+  UncheckedOutcome -> EvidenceValidating [relation="consumption", label="consumes", arrowhead=normal];
+  ProgramFacts -> EvidenceValidating [relation="instrument", label="requires", arrowhead=odot];
+  QueryManifest -> EvidenceValidating [relation="instrument", label="requires", arrowhead=odot];
+  RunState -> EvidenceValidating [relation="instrument", label="requires", arrowhead=odot];
+  EvidenceValidating -> ValidatedOutcome [relation="result", label="yields", arrowhead=onormal];
+
+  ValidatedOutcome -> StateUpdating [relation="consumption", label="consumes", arrowhead=normal];
+  RunState -> StateUpdating [relation="effect", label="affects", dir=both, arrowhead=normal, arrowtail=onormal, constraint=false];
+  RunLedger -> StateUpdating [relation="effect", label="affects", dir=both, arrowhead=normal, arrowtail=onormal, constraint=false];
+
+  RunState -> QueryFinalizing [relation="instrument", label="requires", arrowhead=odot];
+  QueryManifest -> QueryFinalizing [relation="instrument", label="requires", arrowhead=odot];
+  RunSpecification -> QueryFinalizing [relation="instrument", label="requires", arrowhead=odot];
+  RunLedger -> QueryFinalizing [relation="effect", label="affects", dir=both, arrowhead=normal, arrowtail=onormal];
+  QueryFinalizing -> RunBundle [relation="result", label="yields", arrowhead=onormal];
+}

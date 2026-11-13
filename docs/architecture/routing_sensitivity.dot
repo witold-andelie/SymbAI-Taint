@@ -1,0 +1,57 @@
+digraph RoutingSensitivity {
+  graph [rankdir=TB, bgcolor="white", pad="0.3", nodesep="0.35", ranksep="0.5",
+         fontname="Arial", fontsize=18, labelloc=t,
+         label="SymbAI-Taint | Development v13 routing sensitivity\nShared B/C/D policy; complete orders only; no property operations",
+         protocol="symbai-selective-analysis-pilot-v1", view="routing_sensitivity"];
+  node [kind=object, shape=box, style=filled, fillcolor="#EFF6FF", color="#315A85", fontname="Arial", fontsize=11];
+  edge [fontname="Arial", fontsize=9, color="#526477", arrowsize=0.7];
+  Inputs [label="3 Known Compiled Integration Inputs\nfixed binary / query / genuine raw hashes"];
+  Program [label="Copied Binary and Query Identity\nno expected outcomes or prior proofs"];
+  Raw [label="Frozen Raw Candidates and Locations\nread after B is scored", information_role="routing_raw_candidates"];
+  Features [label="Type-Blind Static Frame Features\navailability / mask cue / load and instruction counts"];
+  Policy [label="One Shared Policy and Fixed Weight Grid\n0 / 0.25 / 0.5 primary / 1 / 2"];
+  Catalog [label="Same Two Operation Alternatives\nframe_bounds / expanded_paths; never executed"];
+  BOrders [label="B Complete Orders\nno type views; ready before raw parsing"];
+  Views [label="Independent Occurrence Views\nC Top-1 / D Top-K Raw Scores", information_role="type_view"];
+  CDOrders [label="C/D Complete Orders or Unavailable Rows\nshared features, policy, candidates and tie-break"];
+  Receipt [label="Diagnostic Feature / Mapping / Projection Costs\nnot historical acquisition or deployment costs"];
+  Controls [label="Fixed Frame-First and Full-First Orders\nno learned or neural inputs"];
+  Records [label="45 Routing Rows / 3 Unique Inputs\nall groups, weights and failures retained"];
+  Report [label="Order Sensitivity and Score Geometry Report\nno property, speed, generalization or neural-benefit claim"];
+
+  Snapshotting [kind=process, shape=ellipse, label="Fixed Developer Inputs\nSnapshotting", role="routing_snapshotting", zone="runtime", fillcolor="#EAF5EE"];
+  Capturing [kind=process, shape=ellipse, label="Raw-Free Structural Syntax\nCapturing", role="routing_features_capturing", zone="runtime", fillcolor="#EAF5EE"];
+  BSelecting [kind=process, shape=ellipse, label="Same Policy Without Types\nOrdering", role="selecting", routing_arm="B", zone="runtime", fillcolor="#EAF5EE"];
+  Projecting [kind=process, shape=ellipse, label="Location-Only C/D Views\nPreparing", role="routing_types_preparing", zone="runtime", fillcolor="#EAF5EE"];
+  CDSelecting [kind=process, shape=ellipse, label="Same Policy With Types\nOrdering", role="selecting", routing_arm="CD", zone="runtime", fillcolor="#EAF5EE"];
+  Recording [kind=process, shape=ellipse, label="Complete Orders and Costs\nRecording", role="routing_recording", zone="runtime", fillcolor="#EAF5EE"];
+  Comparing [kind=process, shape=ellipse, label="Fixed-Grid Order Differences\nComparing", role="routing_comparing", zone="evaluation", fillcolor="#FFF1E5"];
+
+  Inputs -> Snapshotting [relation=instrument, label=requires, arrowhead=odot];
+  Snapshotting -> Program [relation=result, label=yields, arrowhead=onormal];
+  Snapshotting -> Raw [relation=result, label=yields, arrowhead=onormal];
+  Program -> Capturing [relation=instrument, label=requires, arrowhead=odot];
+  Capturing -> Features [relation=result, label=yields, arrowhead=onormal];
+  Features -> BSelecting [relation=instrument, label=requires, arrowhead=odot];
+  Policy -> BSelecting [relation=instrument, label=requires, arrowhead=odot];
+  Catalog -> BSelecting [relation=instrument, label=requires, arrowhead=odot];
+  BSelecting -> BOrders [relation=result, label=yields, arrowhead=onormal];
+  BSelecting -> Controls [relation=result, label=yields, arrowhead=onormal];
+  BOrders -> Projecting [relation=instrument, label=requires, arrowhead=odot];
+  Program -> Projecting [relation=instrument, label=requires, arrowhead=odot];
+  Raw -> Projecting [relation=instrument, label=requires, arrowhead=odot];
+  Projecting -> Views [relation=result, label=yields, arrowhead=onormal];
+  Projecting -> Receipt [relation=result, label=yields, arrowhead=onormal];
+  Views -> CDSelecting [relation=instrument, label=requires, arrowhead=odot];
+  Features -> CDSelecting [relation=instrument, label=requires, arrowhead=odot];
+  Policy -> CDSelecting [relation=instrument, label=requires, arrowhead=odot];
+  Catalog -> CDSelecting [relation=instrument, label=requires, arrowhead=odot];
+  CDSelecting -> CDOrders [relation=result, label=yields, arrowhead=onormal];
+  BOrders -> Recording [relation=instrument, label=requires, arrowhead=odot];
+  CDOrders -> Recording [relation=instrument, label=requires, arrowhead=odot];
+  Controls -> Recording [relation=instrument, label=requires, arrowhead=odot];
+  Receipt -> Recording [relation=instrument, label=requires, arrowhead=odot];
+  Recording -> Records [relation=result, label=yields, arrowhead=onormal];
+  Records -> Comparing [relation=instrument, label=requires, arrowhead=odot];
+  Comparing -> Report [relation=result, label=yields, arrowhead=onormal];
+}

@@ -1,0 +1,65 @@
+digraph TypedReadiness {
+  graph [rankdir=LR, labelloc=t, label="V21 Compiled Typed-Complementarity Readiness\nOne binary, three authored functions; fixed controls and one cold acquisition; no neural selector",
+         protocol="symbai-selective-analysis-pilot-v1", view="typed_readiness"];
+  node [kind=object, shape=box, style=filled, fillcolor="#EFF6FF", color="#315A85", fontname="Arial", fontsize=11];
+  edge [fontname="Arial", fontsize=9, color="#526477", arrowsize=0.7];
+  Specs [label="Three Fixed Function/Object/Input Specs\nand two C translation units"];
+  Copies [label="Hashed Sources and Pinned Model Snapshot"];
+  Binary [label="One PIE ELF with DWARF\ncompiler/version/flags and disassembly retained"];
+  Queries [label="Three Fixed Query Identities\nunique declared byte store and object size"];
+  Model [label="Frozen Native CPU Model and Original TYGR Source"];
+  NativeInput [label="Native Graphs, Groups and CPU Tensors\nGlowOutput discarded"];
+  Approved [label="Guard-Passed Complete CPU Batch\nall saved layer domains checked"];
+  DomainFindings [label="Input Domain or Acquisition Failures\npartial artifacts retained"];
+  Logits [label="Genuine Whole-Variable Top-K Raw Logits\nfunction-level availability only"];
+  Catalog [label="Interval / Finite / Expanded / Fixed Cascade\ncommon existing check/validation bodies"];
+  Controls [label="Twelve Control Records\nunknown, failure and timeout retained"];
+  References [label="Three Separate Modeled References"];
+  Limits [label="Parent-Owned Budgets\n120 s acquisition / 30 s control or reference"];
+  Gold [label="Separate Expected Outcomes", data_role="evaluation_only"];
+  Report [label="Three-Query Coverage Intersection and Cost Sanity Check\nno speedup, exact-role or neural-benefit claim"];
+
+  Snapshotting [kind=process, shape=ellipse, label="Fixed Evidence\nSnapshotting", role="typed_snapshotting", zone="runtime", fillcolor="#EAF5EE"];
+  Compiling [kind=process, shape=ellipse, label="One Two-Unit PIE\nCompiling", role="typed_compiling", zone="runtime", fillcolor="#EAF5EE"];
+  Extracting [kind=process, shape=ellipse, label="Symbol and Unique Store\nExtracting", role="typed_extracting", zone="runtime", fillcolor="#EAF5EE"];
+  Preparing [kind=process, shape=ellipse, label="Original Native Inputs\nPreparing", role="typed_preparing", zone="runtime", fillcolor="#EAF5EE"];
+  Guarding [kind=process, shape=ellipse, label="Actual Saved Input Domains\nGuarding", role="typed_guarding", zone="runtime", fillcolor="#EAF5EE"];
+  Forwarding [kind=process, shape=ellipse, label="Unlabeled Frozen Model\nForwarding", role="typed_forwarding", zone="runtime", fillcolor="#EAF5EE"];
+  Checking [kind=process, shape=ellipse, label="Fresh Fixed Controls and Evidence\nChecking", role="typed_checking", zone="runtime", fillcolor="#EAF5EE"];
+  Referencing [kind=process, shape=ellipse, label="Independent Modeled Scope\nReferencing", role="typed_referencing", zone="runtime", fillcolor="#EAF5EE"];
+  Evaluating [kind=process, shape=ellipse, label="Coverage and Paid Cold Cost\nEvaluating", role="evaluating", zone="evaluation", fillcolor="#FFF1E5"];
+
+  Specs -> Snapshotting [relation=instrument, label=requires, arrowhead=odot];
+  Model -> Snapshotting [relation=instrument, label=requires, arrowhead=odot];
+  Snapshotting -> Copies [relation=result, label=yields, arrowhead=onormal];
+  Copies -> Compiling [relation=instrument, label=requires, arrowhead=odot];
+  Compiling -> Binary [relation=result, label=yields, arrowhead=onormal];
+  Binary -> Extracting [relation=instrument, label=requires, arrowhead=odot];
+  Specs -> Extracting [relation=instrument, label=requires, arrowhead=odot];
+  Extracting -> Queries [relation=result, label=yields, arrowhead=onormal];
+  Binary -> Preparing [relation=instrument, label=requires, arrowhead=odot];
+  Copies -> Preparing [relation=instrument, label=requires, arrowhead=odot];
+  Limits -> Preparing [relation=instrument, label=requires, arrowhead=odot];
+  Preparing -> NativeInput [relation=result, label=yields, arrowhead=onormal];
+  NativeInput -> Guarding [relation=instrument, label=requires, arrowhead=odot];
+  Model -> Guarding [relation=instrument, label=requires, arrowhead=odot];
+  Guarding -> Approved [relation=result, label=yields, arrowhead=onormal];
+  Guarding -> DomainFindings [relation=result, label=yields, arrowhead=onormal];
+  Approved -> Forwarding [relation=instrument, label=requires, arrowhead=odot];
+  Model -> Forwarding [relation=instrument, label=requires, arrowhead=odot];
+  Limits -> Forwarding [relation=instrument, label=requires, arrowhead=odot];
+  Forwarding -> Logits [relation=result, label=yields, arrowhead=onormal];
+  Queries -> Checking [relation=instrument, label=requires, arrowhead=odot];
+  Catalog -> Checking [relation=instrument, label=requires, arrowhead=odot];
+  Limits -> Checking [relation=instrument, label=requires, arrowhead=odot];
+  Checking -> Controls [relation=result, label=yields, arrowhead=onormal];
+  Queries -> Referencing [relation=instrument, label=requires, arrowhead=odot];
+  Limits -> Referencing [relation=instrument, label=requires, arrowhead=odot];
+  Referencing -> References [relation=result, label=yields, arrowhead=onormal];
+  Controls -> Evaluating [relation=instrument, label=requires, arrowhead=odot];
+  References -> Evaluating [relation=instrument, label=requires, arrowhead=odot];
+  Logits -> Evaluating [relation=instrument, label=requires, arrowhead=odot];
+  DomainFindings -> Evaluating [relation=instrument, label=requires, arrowhead=odot];
+  Gold -> Evaluating [relation=instrument, label=requires, arrowhead=odot];
+  Evaluating -> Report [relation=result, label=yields, arrowhead=onormal];
+}
