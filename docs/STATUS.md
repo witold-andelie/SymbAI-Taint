@@ -75,6 +75,13 @@ and historical raw bundles are excluded. See [reproducibility](REPRODUCIBILITY.m
 
 ## Next research decision
 
+Route B starts with the [paired information pilot](../benchmarks/selective_analysis/route_b/README.md).
+It fixes six new authored program groups, twelve queries and four information arms.
+The Windows source reference confirmed the bounded index across all 1,536 declared
+inputs. The guarded WSL collection and the paired neural comparison are pending.
+Variant E follows only if the information comparison and a subsequent paired cost
+measurement support it.
+
 Keep the three typed cases as regression and cost controls. Do not tune scores on them
 to force a positive result. Define a small independent program-grouped panel and a
 specific hypothesis about information beyond structural or traditional type analysis.

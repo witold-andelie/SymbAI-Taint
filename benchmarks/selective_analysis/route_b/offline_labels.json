@@ -1,0 +1,17 @@
+{
+  "schema": "symbai.route_b_reference.v1",
+  "cases": {
+    "clip_short": "excluded_within_scope",
+    "clip_full": "excluded_within_scope",
+    "lanes_short": "excluded_within_scope",
+    "lanes_full": "excluded_within_scope",
+    "palette_short": "excluded_within_scope",
+    "palette_full": "excluded_within_scope",
+    "mirror_short": "excluded_within_scope",
+    "mirror_full": "excluded_within_scope",
+    "grid_short": "excluded_within_scope",
+    "grid_full": "excluded_within_scope",
+    "cadence_short": "excluded_within_scope",
+    "cadence_full": "excluded_within_scope"
+  }
+}

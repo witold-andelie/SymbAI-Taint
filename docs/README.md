@@ -13,6 +13,7 @@ metrics must not be confused with development revisions of the frozen pilot.
 | [Architecture](architecture.md) | Frozen protocol, contracts and implementation boundary. |
 | [OPM profile](architecture/README.md) | DOT notation, 22 views and rendering instructions. |
 | [Pilot guide](../benchmarks/selective_analysis/README.md) | CLI protocols and chronological diagnostic commands. |
+| [Route B information pilot](../benchmarks/selective_analysis/route_b/README.md) | Six new program groups and four paired information arms. |
 | [Reproducibility](REPRODUCIBILITY.md) | Public files, external dependencies and local receipt replay. |
 | [Runtime compatibility](VERSION_COMPAT.md) | Measured Windows/WSL and native TYGR environments. |
 | [Synchronization verification](VERIFICATION.md) | Local/public-export tests, optional skips and rendering checks. |
