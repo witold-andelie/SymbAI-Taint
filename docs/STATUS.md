@@ -951,6 +951,12 @@ decided **Neither**: more coverage did not reliably improve the four-layer RGCN 
 structural baseline. Neural type information shows no incremental value at this scale;
 Variant E is not pursued. See
 [v3 results](../benchmarks/selective_analysis/route_b/README.md#type-pilot-v3-results).
+The pre-registered v4 test of a learned structural backend order on 62 held-out finite-domain
+queries (17 binary groups) was **not supported**: the fixed symbolic-first cascade verified 120 of
+124 trials in 35.1 s, against 110 in 60.9 s for the learned order. It matched the oracle on verified
+decisions. One ill-defined kernel query (out-of-buffer read) produced wrong decisions in both
+symbolic-first arms. See
+[v4 results](../benchmarks/selective_analysis/route_b/README.md#route-b-v4-structural-selection-results).
 [Native input preparation](../benchmarks/selective_analysis/route_b/README.md#native-debugstripped-input-preparation).
 [Two-function neural probe](../benchmarks/selective_analysis/route_b/README.md#two-function-native-neural-probe).
 [Native coverage and baseline gate](../benchmarks/selective_analysis/route_b/README.md#twelve-function-neural-coverage-audit).

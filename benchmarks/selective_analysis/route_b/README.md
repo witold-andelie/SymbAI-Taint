@@ -3089,3 +3089,48 @@ Secondary observations, which decide nothing:
 
 These are results for one development set of three projects (dominated by md4c, 395 of 571
 variables). They are not a benchmark, and no scheduling comparison was run.
+
+### Route B v4 structural selection results
+
+The [v4 pre-registration](structural_selection_v4_design.md) was frozen in
+`route-b-v4-freeze-20261121T073634943739Z` after the consolidated backends passed their regression
+gate (`route-b-v4-backend-regression-20261121T073429858926Z`: the archived project-disjoint outcome
+set was reproduced in both repetitions, with zero wrong decisions).
+
+- **Selector L.** Fitted only on 316 single-backend runs over 79 development queries
+  (`route-b-v4-selector-20261121T074211473909Z`). The symbolic backend was decisive in 105 of 158
+  runs and the concrete backend in 108 of 158.
+- **Panel.** The held-out panel (`route-b-v4-panel-20261121T073950924Z`) has 62 queries in 17 binary
+  groups, meeting the minimum of 60 queries and 15 groups. It contains 18 Juliet CWE129 queries
+  (S1) and 44 corpus-kernel queries (S2); 17 S2 candidates failed the freestanding link and stay
+  recorded. The offline references contain 36 safe and 26 violation queries.
+- **Run.** Every arm ran once (`route-b-v4-run-20261121T074927114386Z`): two repetitions, a fresh
+  warm worker per binary group and arm, and a 3 s budget per query. No worker was replaced.
+
+| Arm | M1 verified (of 124) | M2 charged seconds | S1 verified | S2 verified |
+| --- | ---: | ---: | ---: | ---: |
+| F symbolic then concrete | 120 | 35.1 | 36/36 | 84/88 |
+| C concrete then symbolic | 100 | 222.6 | 36/36 | 64/88 |
+| L learned order | 110 | 60.9 | 36/36 | 74/88 |
+| O oracle over F and C | 120 | 38.8 | | |
+
+**Pre-registered decision: not supported.** L verified fewer queries than F and charged more time.
+The 95% binary-group bootstrap interval of M2(F) - M2(L) was [-67.3, 1.2] s. L chose
+concrete-first for six queries (two md4c Unicode classifiers and tpl `tpl_size_for`, each at two
+capacities). There, concrete enumeration did not finish within the budget, and the remaining time
+was too short for the symbolic backend. F decided five of those six queries in 0.1-0.7 s. On this
+panel the fixed symbolic-first order equals the oracle on M1 and leaves no verified-decision
+headroom.
+
+**Wrong decisions (reported first; they block any positive claim).** Both symbolic-first arms (F
+and L) reported `violation` for `sds-sdsAllocSize-L300-cap3` in both repetitions, against a `safe`
+native reference. The kernel reads `s[-1]`, outside the two-byte buffer that the S2 `char *`
+template supplies. This is undefined behavior: the native reference observes fixed stack contents
+(index 2 for every input), while the symbolic backend treats that memory as unconstrained. The
+query is therefore ill-defined rather than a checker failure on defined code. It still counts as a
+wrong decision under the protocol. Future panel builders need an out-of-buffer read screen (for
+example, a sanitizer-instrumented native reference) before admitting pointer-parameter kernels.
+
+Across v1-v4, neither neural type scores nor a learned structural order improved on the fixed
+symbolic-to-concrete cascade for finite-domain write-bound queries at this scale. Per the
+pre-registration, Route B now reports the characterization and these negative results.

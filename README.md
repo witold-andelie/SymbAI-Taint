@@ -100,7 +100,10 @@ on two new development projects (200 variables) found no reliable gain from a
 deeper RGCN, and a deterministic structural baseline (121/200) beat every GNN arm. A
 [pre-registered v3 expansion](benchmarks/selective_analysis/route_b/README.md#type-pilot-v3-results)
 to 1,460 training variables did not change that: on 571 fresh development variables the
-decision was negative for neural type information at this scale.
+decision was negative for neural type information at this scale. A pre-registered
+[v4 test](benchmarks/selective_analysis/route_b/README.md#route-b-v4-structural-selection-results)
+found that a learned structural backend order did not beat the fixed symbolic-first cascade, which
+matched the oracle on verified decisions over 62 held-out queries.
 Neural scheduling benefit remains unmeasured and Variant E is deferred.
 
 ## Installation
