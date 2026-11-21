@@ -1,4 +1,4 @@
-"""Bounded finite AMD64 values and immutable file-backed qword indirections.
+"""Bounded finite AMD64 values and immutable file-backed byte and qword loads.
 
 This operation has no paths, solver, type inputs or witness claim.  Cartesian
 products deliberately lose correlations and saturate to Top rather than sample.
@@ -15,7 +15,8 @@ from .elf_guard import check_relocation_coverage
 from .local_bounds import LocalBoundsChecker, UnsupportedBounds, MAX64
 
 
-REVISION = "finite_readonly_values_v14"
+LEGACY_REVISION = "finite_readonly_values_v14"
+REVISION = "finite_readonly_values_byte_loads_v1"
 CARDINALITY_LIMIT = 32
 _RELOCATION_WIDTHS = {0: 0, 1: 8, 6: 8, 7: 8, 8: 8}
 
@@ -73,10 +74,11 @@ class FiniteReadonlyChecker:
                         raise UnsupportedBounds("wrapping_relocation_span")
                     self.relocations.append((start, start + width))
 
-    def _bounded(self, values, reason):
+    def _bounded(self, values, reason, bits=64):
         result = set()
+        mask = (1 << bits) - 1
         for value in values:
-            result.add(value & MAX64)
+            result.add(value & mask)
             if len(result) > self.cardinality_limit:
                 self.saturations.append({"reason": reason, "observed_distinct_lower_bound": len(result),
                                          "cardinality_limit": self.cardinality_limit})
@@ -87,9 +89,15 @@ class FiniteReadonlyChecker:
         if operand.type != self.x86.X86_OP_REG:
             raise UnsupportedBounds("non_target_memory_write")
         name, bits = self.local.register(insn.reg_name(operand.reg))
-        if bits != 64 or operand.size != 8:
-            raise UnsupportedBounds("non64_register_outside_subset")
-        return name
+        if operand.size != bits // 8:
+            raise UnsupportedBounds("register_width_mismatch")
+        return name, bits
+
+    @staticmethod
+    def _truncate(values, bits):
+        if values is None or bits == 64:
+            return values
+        return frozenset(value & ((1 << bits) - 1) for value in values)
 
     def _address(self, insn, operand, registers, readonly=False):
         if operand.type != self.x86.X86_OP_MEM or insn.addr_size != 8 or operand.mem.segment:
@@ -120,14 +128,15 @@ class FiniteReadonlyChecker:
         return self._bounded(sums(), "address_cardinality_exceeds_cap")
 
     def _read(self, insn, operand, registers):
-        if operand.size != 8:
+        size = operand.size
+        if size not in (1, 8):
             raise UnsupportedBounds("readonly_load_width_outside_subset")
         addresses = self._address(insn, operand, registers, readonly=True)
         if addresses is None:
             raise UnsupportedBounds("readonly_address_is_top")
         values = []
         for address in sorted(addresses):
-            if address + 8 > MAX64 + 1:
+            if address + size > MAX64 + 1:
                 raise UnsupportedBounds("readonly_span_wrap")
             matches = [segment for segment in self.segments if segment["start"] <= address
                        and address < segment["start"] + segment["memory_size"]]
@@ -137,29 +146,30 @@ class FiniteReadonlyChecker:
             if segment["flags"] & 2 or not segment["flags"] & 4:
                 raise UnsupportedBounds("mutable_or_unreadable_memory_load")
             offset = address - segment["start"]
-            if offset + 8 > len(segment["bytes"]) or offset + 8 > segment["memory_size"]:
+            if offset + size > min(len(segment["bytes"]), segment["memory_size"]):
                 raise UnsupportedBounds("readonly_span_unbacked_or_cross_segment")
-            if any(address < end and start < address + 8 for start, end in self.relocations):
+            if any(address < end and start < address + size for start, end in self.relocations):
                 raise UnsupportedBounds("readonly_span_overlaps_relocation")
-            data = segment["bytes"][offset:offset + 8]
+            data = segment["bytes"][offset:offset + size]
             value = int.from_bytes(data, "little")
             self.readonly_reads.append({"instruction_rva": insn.address - self.base, "address": address,
-                                        "size_bytes": 8, "bytes": data.hex(), "sha256": _sha(data),
+                                        "size_bytes": size, "bytes": data.hex(), "sha256": _sha(data),
                                         "segment_start": segment["start"], "segment_sha256": segment["sha256"],
                                         "value": value})
             values.append(value)
         return self._bounded(values, "loaded_value_cardinality_exceeds_cap")
 
-    def _value(self, insn, operand, registers, load=False):
+    def _value(self, insn, operand, registers, bits, load=False):
         if operand.type == self.x86.X86_OP_IMM:
-            return frozenset((operand.imm & MAX64,))
+            return frozenset((operand.imm & ((1 << bits) - 1),))
         if operand.type == self.x86.X86_OP_REG:
-            return registers.get(self._register(insn, operand))
+            name, source_bits = self._register(insn, operand)
+            return self._truncate(registers.get(name), source_bits)
         if load and operand.type == self.x86.X86_OP_MEM:
             return self._read(insn, operand, registers)
         raise UnsupportedBounds("value_operand_outside_subset")
 
-    def _arithmetic(self, mnemonic, left, right):
+    def _arithmetic(self, mnemonic, left, right, bits):
         if mnemonic == "and" and (left is None or right is None):
             masks = right if left is None else left
             if masks is None:
@@ -183,7 +193,8 @@ class FiniteReadonlyChecker:
             return None
         operation = {"add": lambda a, b: a + b, "sub": lambda a, b: a - b,
                      "and": lambda a, b: a & b, "xor": lambda a, b: a ^ b}[mnemonic]
-        return self._bounded((operation(a, b) for a in left for b in right), "arithmetic_cardinality_exceeds_cap")
+        return self._bounded((operation(a, b) for a in left for b in right),
+                             "arithmetic_cardinality_exceeds_cap", bits)
 
     @staticmethod
     def _render(registers):
@@ -203,6 +214,7 @@ class FiniteReadonlyChecker:
             else:
                 registers[bound.register] = frozenset(range(bound.minimum, bound.maximum + 1))
         trace, pc = [], self.base + self.query.entry_rva
+        revision = LEGACY_REVISION
         try:
             while len(trace) < max_instructions:
                 if time.monotonic() >= deadline:
@@ -221,11 +233,11 @@ class FiniteReadonlyChecker:
                     if file_hash(self.query.binary) != self.query.binary_sha256:
                         raise ValueError("Binary changed during finite readonly check")
                     certificate = {"query_hash": self.query.contract_hash, "binary_sha256": self.query.binary_sha256,
-                                   "operation_revision": REVISION, "cardinality_limit": self.cardinality_limit,
+                                   "operation_revision": revision, "cardinality_limit": self.cardinality_limit,
                                    "max_instructions": max_instructions, "trace": trace,
                                    "readonly_reads": self.readonly_reads, "saturations": self.saturations,
                                    "discharged_writes": [{"addresses": sorted(addresses), "length": size}]}
-                    return {"status": "excluded_within_scope", "complete": True, "operation_revision": REVISION,
+                    return {"status": "excluded_within_scope", "complete": True, "operation_revision": revision,
                             "cardinality_limit": self.cardinality_limit, "abstract_instructions": len(trace),
                             "saturations": self.saturations, "readonly_reads": self.readonly_reads,
                             "certificate": certificate, "certificate_sha256": fingerprint(certificate),
@@ -233,26 +245,35 @@ class FiniteReadonlyChecker:
                 if mnemonic in ("nop", "endbr64") and not ops:
                     pc += insn.size
                     continue
-                if mnemonic not in ("mov", "movabs", "lea", "add", "sub", "and", "xor") or len(ops) != 2:
+                if mnemonic not in ("mov", "movabs", "movzx", "lea", "add", "sub", "and", "xor") or len(ops) != 2:
                     raise UnsupportedBounds("unsupported_instruction:" + mnemonic)
-                name = self._register(insn, ops[0])
+                name, bits = self._register(insn, ops[0])
+                if bits == 32 or mnemonic == "movzx":
+                    revision = REVISION
                 if name == "rsp":
                     raise UnsupportedBounds("stack_modification_outside_subset")
                 if mnemonic in ("mov", "movabs"):
-                    value = self._value(insn, ops[1], registers, load=True)
+                    value = self._value(insn, ops[1], registers, bits, load=True)
+                elif mnemonic == "movzx":
+                    if ops[1].type != self.x86.X86_OP_MEM or ops[1].size != 1:
+                        raise UnsupportedBounds("movzx_source_outside_subset")
+                    value = self._read(insn, ops[1], registers)
                 elif mnemonic == "lea":
                     value = self._address(insn, ops[1], registers)
                 elif mnemonic == "xor" and ops[1].type == self.x86.X86_OP_REG and ops[0].reg == ops[1].reg:
                     value = frozenset((0,))
                 else:
-                    value = self._arithmetic(mnemonic, registers.get(name), self._value(insn, ops[1], registers))
-                registers[name] = value
+                    left = self._truncate(registers.get(name), bits)
+                    right = self._value(insn, ops[1], registers, bits)
+                    value = self._arithmetic(mnemonic, left, right, bits)
+                # AMD64 zero-extends a 32-bit destination into its full register.
+                registers[name] = self._truncate(value, bits)
                 pc += insn.size
                 if pc > self.target:
                     raise UnsupportedBounds("target_not_on_straight_line_instruction_boundary")
             raise UnsupportedBounds("finite_instruction_limit")
         except UnsupportedBounds as exc:
-            return {"status": "unknown", "reason": str(exc), "operation_revision": REVISION,
+            return {"status": "unknown", "reason": str(exc), "operation_revision": revision,
                     "cardinality_limit": self.cardinality_limit, "abstract_instructions": len(trace),
                     "trace": trace, "saturations": self.saturations, "readonly_reads": self.readonly_reads}
 
@@ -260,11 +281,12 @@ class FiniteReadonlyChecker:
         if result.get("status") == "unknown":
             return dict(result, validation="no_decisive_evidence")
         certificate = result.get("certificate", {})
-        if (result.get("status") != "excluded_within_scope" or result.get("operation_revision") != REVISION
+        revision = result.get("operation_revision")
+        if (result.get("status") != "excluded_within_scope" or revision not in (LEGACY_REVISION, REVISION)
                 or result.get("cardinality_limit") != self.cardinality_limit
                 or certificate.get("query_hash") != self.query.contract_hash
                 or certificate.get("binary_sha256") != self.query.binary_sha256
-                or certificate.get("operation_revision") != REVISION
+                or certificate.get("operation_revision") != revision
                 or certificate.get("cardinality_limit") != self.cardinality_limit
                 or result.get("certificate_sha256") != fingerprint(certificate)):
             raise ValueError("Invalid or mismatched finite readonly certificate")

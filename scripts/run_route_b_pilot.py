@@ -82,6 +82,11 @@ def collect_model(binary, native_python, tygr, inventory, model, hashes, copies,
                    "implementation": wrappers}
         record = run_stage([str(native_python), "-B", wrappers["wrapper"]["path"]],
                            request, folder / "acquisition", 120)
+    return admit_model(record, native["binary_sha256"], wrappers, expected_trace)
+
+
+def admit_model(record, binary_hash, wrappers, expected_trace):
+    """Require matching location traces and independently checked raw logits."""
     payload = record["payload"].get("candidate") or {}
     adapter = payload.get("location_adapter", {})
     if (payload.get("acquisition_variant") != VARIANT or adapter.get("revision") != REVISION
@@ -91,7 +96,7 @@ def collect_model(binary, native_python, tygr, inventory, model, hashes, copies,
             sorted(expected_trace, key=lambda row: row["die_offset"])):
         raise ValueError("Location trace did not match the independent extraction")
     validate_api(adapter.get("entry_api"))
-    validated_acquisition(record, native["binary_sha256"])
+    validated_acquisition(record, binary_hash)
     return payload["records"], fingerprint(payload), record["parent_receipt"]["charged_seconds"]
 
 

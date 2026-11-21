@@ -121,6 +121,37 @@ def context(parsed):
     return die, parser, dumper
 
 
+def test_offline_trace_uses_enclosing_function_range_for_inlined_locations(root, monkeypatch):
+    from elftools.elf import elffile
+    from elftools.dwarf import locationlists
+
+    def die(tag, offset, children=(), **attributes):
+        return SimpleNamespace(tag=f'DW_TAG_{tag}', offset=offset,
+                               attributes={f'DW_AT_{key}': value for key, value in attributes.items()},
+                               iter_children=lambda: iter(children))
+
+    parameter = die('formal_parameter', 11, location=LocationExpr([0x55]))
+    local = die('variable', 31, location=[entry(2, 4)])
+    block = die('lexical_block', 30, (local,))
+    inlined = die('inlined_subroutine', 20, (block,), low_pc=SimpleNamespace(value=0x112B))
+    function = die('subprogram', 10, (parameter, inlined), low_pc=SimpleNamespace(value=0x1129),
+                   high_pc=SimpleNamespace(value=12, form='DW_FORM_data8'))
+    cu = CU(version=4, address_size=8)
+    cu.iter_DIEs = lambda: iter((function, parameter, inlined, block, local))
+    dwarf = SimpleNamespace(iter_CUs=lambda: iter((cu,)), location_lists=lambda: None)
+    monkeypatch.setattr(elffile, 'ELFFile', lambda stream: SimpleNamespace(get_dwarf_info=lambda: dwarf))
+    monkeypatch.setattr(locationlists, 'LocationParser', lambda lists: SimpleNamespace(
+        parse_from_attribute=lambda attribute, version, die: attribute))
+    binary = root / 'fixture.elf'
+    binary.touch()
+
+    rows = cli.offline_trace(binary)
+
+    assert [row['die_offset'] for row in rows] == [11, 31]
+    assert rows[1]['function_range'] == [0x1129, 0x1135]
+    assert rows[1]['entries'][0]['resolved_range'] == [0x112B, 0x112D]
+
+
 def test_replays_actual_old_heuristic_then_corrects_both_bound_entry_points(original_location):
     old = original_location
     lookup = SimpleNamespace(die_location_list=old.die_location_list, struct_die_location_list=old.struct_die_location_list)

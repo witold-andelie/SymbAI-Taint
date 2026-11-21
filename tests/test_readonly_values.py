@@ -14,7 +14,7 @@ from benchmarks.selective_analysis.indirection_mechanisms import READONLY, mecha
 from benchmarks.selective_analysis.mechanisms import BASE, DATA, TEXT, Code
 from src.selective_analysis.contracts import InputRange, Query, file_hash, fingerprint
 from src.selective_analysis.local_bounds import LocalBoundsChecker, UnsupportedBounds
-from src.selective_analysis.readonly_values import FiniteReadonlyChecker
+from src.selective_analysis.readonly_values import LEGACY_REVISION, REVISION, FiniteReadonlyChecker
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -60,12 +60,55 @@ def direct_read(address=READONLY + 32, displacement=0):
     return move + " " + load
 
 
+def byte_lookup(address=READONLY + 32):
+    base = struct.pack("<Q", address).hex(" ")
+    return f"83 e7 07 48 ba {base} 0f b6 3c 3a"  # and edi,7; movabs rdx,table; movzx edi,[rdx+rdi]
+
+
+@pytest.mark.parametrize("maximum", [31, 255])
+def test_byte_lookup_proves_the_whole_input_range(make_case, maximum):
+    table = bytes((8, 13, 27, 42, 85, 128, 221, 253))
+
+    def table_bytes(blob):
+        blob[0x3038:0x3040] = table
+
+    query = make_case(prefix=byte_lookup(READONLY + 56), inputs=(InputRange("rdi", 0, maximum),),
+                      capacity=256, mutate=table_bytes)
+    checker = FiniteReadonlyChecker(query)
+    result = checker.validate(checker.check(deadline()), deadline())
+    assert result["status"] == "excluded_within_scope"
+    assert result["validation"] == "fresh_byte_data_abstract_recheck"
+    assert result["certificate"]["operation_revision"] == REVISION
+    assert [(row["size_bytes"], row["value"]) for row in result["readonly_reads"]] == [
+        (1, value) for value in table
+    ]
+    assert result["certificate"]["discharged_writes"] == [
+        {"addresses": sorted(DATA + value for value in table), "length": 1}
+    ]
+
+
+@pytest.mark.parametrize("prefix,start,expected", [("89 ff", (1 << 32) + 5, 5),
+                                                  ("83 c7 01", (1 << 32) - 1, 0)])
+def test_32bit_write_clears_high_bits_and_wraps_at_32_bits(make_case, prefix, start, expected):
+    checker = FiniteReadonlyChecker(make_case(prefix=prefix, inputs=(InputRange("rdi", start, start),)))
+    result = checker.check(deadline())
+    assert result["status"] == "excluded_within_scope"
+    assert result["certificate"]["discharged_writes"][0]["addresses"] == [DATA + expected]
+
+
 def add_relocation(blob, address):
     blob.extend(b"\0" * (0x3280 - len(blob)))
     struct.pack_into("<QQq", blob, 0x3100, address, 1, 0)
     struct.pack_into("<Q", blob, 40, 0x3200)
     struct.pack_into("<HHH", blob, 58, 64, 2, 0)
     struct.pack_into("<IIQQQQIIQQ", blob, 0x3240, 0, 4, 0, 0, 0x3100, 24, 0, 0, 8, 24)
+
+
+def test_byte_lookup_checks_relocation_overlap(make_case):
+    query = make_case(prefix=byte_lookup(), mutate=lambda blob: add_relocation(blob, READONLY + 31))
+    result = FiniteReadonlyChecker(query).check(deadline())
+    assert result["status"] == "unknown"
+    assert result["reason"] == "readonly_span_overlaps_relocation"
 
 
 def test_declared_capability_shapes_are_complementary_without_abstract_witnesses(make_case):
@@ -76,6 +119,7 @@ def test_declared_capability_shapes_are_complementary_without_abstract_witnesses
     assert LocalBoundsChecker(safe).check(deadline())["status"] == "unknown"
     good = FiniteReadonlyChecker(safe).check(deadline())
     assert good["status"] == "excluded_within_scope"
+    assert good["certificate"]["operation_revision"] == LEGACY_REVISION
     assert good["certificate"]["discharged_writes"] == [{"addresses": [DATA + 2, DATA + 6], "length": 1}]
     assert [row["value"] for row in good["readonly_reads"]] == [READONLY + 32, READONLY + 40, 2, 6]
     bad_checker = FiniteReadonlyChecker(unsafe)
@@ -125,7 +169,7 @@ def test_machine_width_arithmetic_and_xor_are_conservative(make_case, prefix, mi
 
 
 @pytest.mark.parametrize("prefix,reason", [("eb 00", "unsupported_instruction"), ("e8 00 00 00 00", "unsupported_instruction"),
-                                         ("c6 02 00", "non_target_memory_write"), ("89 ff", "non64_register"),
+                                         ("c6 02 00", "non_target_memory_write"), ("40 88 ff", "register_width"),
                                          ("48 83 ec 08", "stack_modification"), ("48 8b 3a", "readonly_address_is_top")])
 def test_unsupported_effects_and_unknown_addresses_do_not_exclude(make_case, prefix, reason):
     result = FiniteReadonlyChecker(make_case(prefix=prefix)).check(deadline())

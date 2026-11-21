@@ -29,6 +29,15 @@ NEW_SOURCES = ('scripts/run_location_repair.py', 'scripts/export_location_repair
     'docs/architecture/pilot_revision_v22_1.md')
 
 
+def _function_location_dies(scope):
+    """Visit locations in the function and its nested lexical and inline scopes."""
+    for die in scope.iter_children():
+        if die.tag in ('DW_TAG_variable', 'DW_TAG_formal_parameter') and 'DW_AT_location' in die.attributes:
+            yield die
+        elif die.tag in ('DW_TAG_lexical_block', 'DW_TAG_inlined_subroutine'):
+            yield from _function_location_dies(die)
+
+
 def offline_trace(binary):
     """Independent ELF reader, without importing original TYGR or model frameworks."""
     from elftools.elf.elffile import ELFFile
@@ -48,9 +57,7 @@ def offline_trace(binary):
                 low = function.attributes['DW_AT_low_pc'].value
                 high = function.attributes['DW_AT_high_pc']
                 high = high.value + (0 if high.form == 'DW_FORM_addr' else low)
-                for die in function.iter_children():
-                    if die.tag not in ('DW_TAG_variable', 'DW_TAG_formal_parameter') or 'DW_AT_location' not in die.attributes:
-                        continue
+                for die in _function_location_dies(function):
                     parsed = parser.parse_from_attribute(die.attributes['DW_AT_location'], 4, die=die)
                     if isinstance(parsed, LocationExpr):
                         rows.append({'kind': 'single_expression', 'die_offset': die.offset,
