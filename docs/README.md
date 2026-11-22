@@ -9,15 +9,24 @@ metrics must not be confused with development revisions of the frozen pilot.
 | Document | Read it for |
 |---|---|
 | [Overview](../README.md) | Purpose, research questions and a minimal run. |
-| [Status](STATUS.md) | Latest v23 evidence, limitations and next gate. |
+| [Status](STATUS.md) | Current Route B v5 checkpoint and chronological development evidence. |
 | [Architecture](architecture.md) | Frozen protocol, contracts and implementation boundary. |
 | [OPM profile](architecture/README.md) | DOT notation, 22 views and rendering instructions. |
 | [Pilot guide](../benchmarks/selective_analysis/README.md) | CLI protocols and chronological diagnostic commands. |
-| [Route B information pilot](../benchmarks/selective_analysis/route_b/README.md) | Six new program groups and four paired information arms. |
-| [Reproducibility](REPRODUCIBILITY.md) | Public files, external dependencies and local receipt replay. |
+| [Route B series](../benchmarks/selective_analysis/route_b/README.md#pre-registered-series) | Type-information pilots, structural selection and cascade headroom. |
+| [Reproducibility](REPRODUCIBILITY.md) | Public files, external dependencies, v4/v5 pipelines and local receipt replay. |
 | [Runtime compatibility](VERSION_COMPAT.md) | Measured Windows/WSL and native TYGR environments. |
 | [Synchronization verification](VERIFICATION.md) | Local/public-export tests, optional skips and rendering checks. |
 | [Research write-up](PAPER_MATERIAL.md) | Supportable observations and missing evidence. |
+
+## Route B pre-registrations and results
+
+| Study | Pre-registration | Amendments | Results |
+| --- | --- | --- | --- |
+| Type pilot v2 | [Remedy and new development set](../benchmarks/selective_analysis/route_b/type_pilot_v2_preregistration.md) | None. | [Results](../benchmarks/selective_analysis/route_b/README.md#type-pilot-v2-results) |
+| Type pilot v3 | [Training-coverage expansion](../benchmarks/selective_analysis/route_b/type_pilot_v3_preregistration.md) | None. | [Results](../benchmarks/selective_analysis/route_b/README.md#type-pilot-v3-results) |
+| Route B v4 | [Structural selection](../benchmarks/selective_analysis/route_b/structural_selection_v4_design.md) | None. | [Results](../benchmarks/selective_analysis/route_b/README.md#route-b-v4-structural-selection-results) |
+| Route B v5 | [Cascade headroom](../benchmarks/selective_analysis/route_b/cascade_headroom_v5_design.md) | [Amendment 1](../benchmarks/selective_analysis/route_b/cascade_headroom_v5_amendment_1.md), [amendment 2](../benchmarks/selective_analysis/route_b/cascade_headroom_v5_amendment_2.md), [amendment 3](../benchmarks/selective_analysis/route_b/cascade_headroom_v5_amendment_3.md). | [Results](../benchmarks/selective_analysis/route_b/README.md#route-b-v5-cascade-headroom-results) |
 
 ## Frozen specifications and evidence
 

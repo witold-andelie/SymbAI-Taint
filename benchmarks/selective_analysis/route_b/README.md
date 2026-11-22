@@ -1,5 +1,14 @@
 # Route B information pilot
 
+## Pre-registered series
+
+| Study | Pre-registration | Amendments | Results |
+| --- | --- | --- | --- |
+| Type pilot v2 | [Remedy and new development set](type_pilot_v2_preregistration.md) | None. | [Results](#type-pilot-v2-results) |
+| Type pilot v3 | [Training-coverage expansion](type_pilot_v3_preregistration.md) | None. | [Results](#type-pilot-v3-results) |
+| Route B v4 | [Structural selection](structural_selection_v4_design.md) | None. | [Results](#route-b-v4-structural-selection-results) |
+| Route B v5 | [Cascade headroom](cascade_headroom_v5_design.md) | [Amendment 1](cascade_headroom_v5_amendment_1.md), [amendment 2](cascade_headroom_v5_amendment_2.md), [amendment 3](cascade_headroom_v5_amendment_3.md). | [Results](#route-b-v5-cascade-headroom-results) |
+
 This experiment measures whether genuine neural type information helps the existing
 selector within an analysis budget. It runs before any development of Variant E.
 The test panel is new relative to the v1–v23 development records. Six separately

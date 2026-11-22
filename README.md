@@ -4,187 +4,180 @@
 ![Python 3.13](https://img.shields.io/badge/Python-3.13-blue.svg)
 ![Status](https://img.shields.io/badge/status-research%20pilot-lightgrey.svg)
 
-Code, experimental protocols and evidence notes for an academic study of which
-local program-analysis operations to run under a limited computation budget.
-
 ## Overview
 
-Binary program analysis can use several checks to answer the same scoped
-property query. Some checks are cheap but incomplete. Others cost more and
-may resolve queries that the cheaper checks leave open. SymbAI-Taint asks
-whether pretrained neural type predictions help choose the next check.
+SymbAI-Taint studies whether neural type predictions, or learned structural
+features, improve the choice and order of analysis backends for scoped binary
+property queries under a limited computation budget.
 
-The selector ranks operations using structural information and, when assigned
-to a neural arm, types from a frozen TYGR/GlowGNN checkpoint. The checker uses
-program semantics and explicit query assumptions, and fresh validation checks
-decisive evidence. The offline evaluator reads the reference labels.
+The findings at the tested scale:
+- Type pilots v1-v3 found no incremental neural type information beyond a
+  deterministic structural baseline.
+- The pre-registered Route B v4 and v5 experiments found that a learned
+  structural backend order did not beat a fixed symbolic-then-concrete cascade.
+- Neural scheduling benefit was not shown.
+- The cascade's remaining headroom against a per-query oracle is small and
+  concentrated in a few kernels.
 
-![OPM system view of the frozen scheduling pilot](docs/architecture/system.svg)
+The selector sets priorities; semantic checkers and fresh evidence validation
+support decisions. Unsupported behavior, incomplete evidence and expired
+requests remain `unknown`. Reference labels belong to offline evaluation.
 
-## Main contributions
+## Pre-registered series
 
-1. **Controlled scheduling protocol.** The same selector, policy parameters,
-   operation catalog and checkers support type-blind, Top-1 and scored Top-K
-   comparisons. The fixed-order arm provides a separate baseline.
-2. **Scoped evidence and cost accounting.** The runner records the query,
-   decisions, timeouts and separate acquisition and analysis costs.
-3. **Audited model integration.** An external adapter repairs DWARF4 location
-   ranges in the isolated TYGR runtime. Guards validate native graph inputs and
-   export the actual logits of the frozen 75-class checkpoint.
-4. **Route B evaluation.** A new panel of six authored programs compares
-   precomputed Top-1, an unscored Top-K set and scored Top-K with the same
-   type-blind selector. Its decision rule comes before any gated acquisition work.
+| Study | Question | Panel or data | Decision | Key numbers | Results |
+| --- | --- | --- | --- | --- | --- |
+| v2 | Does deeper message passing add type information beyond structure? | 129 training variables; 200 new development variables in two projects. | **No R1**; R2 also failed. | Structural A5: 121/200; deeper A3: 88, 59, 83 correct across seeds. | [Type pilot v2](benchmarks/selective_analysis/route_b/README.md#type-pilot-v2-results) |
+| v3 | Does expanded training help, and do neural scores add to structure? | 1,460 training variables in 15 projects; 571 fresh development variables in three projects. | **Neither**. | Structural D5: 269; expanded DG: 247, 251, 239 correct. | [Type pilot v3](benchmarks/selective_analysis/route_b/README.md#type-pilot-v3-results) |
+| v4 | Does a learned structural backend order beat the fixed orders? | 62 held-out queries in 17 binary groups. | **not supported**. | F: 120 of 124 verified, 35.1 s; L: 110, 60.9 s. | [Structural selection](benchmarks/selective_analysis/route_b/README.md#route-b-v4-structural-selection-results) |
+| v5 | Is the cascade equivalent to the oracle, and is learned order non-superior? | 169 new, sanitizer-screened queries in 41 binary groups. | **Q1 not supported**; **Q2 supported**. | F: 332 of 338 verified, 97.0 s; L: 326, 113.7 s; no wrong decisions. | [Cascade headroom](benchmarks/selective_analysis/route_b/README.md#route-b-v5-cascade-headroom-results) |
 
-## Key results
+Type pilot v1 was a development pilot, not a pre-registered decision: training
+was feasible, but a reliable graph-message effect was not established
+([training results](benchmarks/selective_analysis/route_b/README.md#training-pilot-results)).
 
-| Question | Verified observation | Evidence |
-|---|---|---|
-| Can the model run on the compiled development panel? | v22.1 obtained output for 3/3 functions in one ELF, with seven variable records and three guarded forwards. | [Acquisition audit](docs/pilot_evidence.md#v221-successful-wsl-repair-audit) |
-| Can those predictions distinguish the table-query pair? | Both queries yielded identical actual model inputs and all 75-class output rows despite different analysis-operation outcomes. | [v23 comparison](docs/pilot_evidence.md#v23-retained-type-information-collision-audit) |
-| How costly is acquisition? | Cold acquisition took 8.305 s. A historical fixed cascade recorded 2.162 s for its three-query total in a separate run. | [Cost interpretation](docs/STATUS.md#current-checkpoint) |
-| Did neural type information improve Route B scheduling? | All six programs had usable predictions. At the primary budget, B resolved 16/24 trials, Top-1 resolved 14/24, unscored Top-K resolved 12/24, and scored Top-K resolved 13/24. The pilot's advancement criterion was unmet. | [Route B results](benchmarks/selective_analysis/route_b/README.md#wsl-results) |
-| Can a stronger model-free baseline improve completion? | Cache-preserving deadline checks verified 24/24 trials on six known queries repeated four times, compared with 20/24 for the original cascade. The paired median batch saving was 1.468 s. Independent generalization and neural benefit remain open. | [Cache-preserving checks](benchmarks/selective_analysis/route_b/README.md#cache-preserving-deadline-checks) |
-| Did the frozen 100 ms policy transfer to new projects? | On six newly selected source kernels from six disjoint projects, both methods verified 20/24 trials. The 100 ms policy added a paired median 3.429 s per batch, so its coverage and cost transfer criteria failed. | [Disjoint-project test](benchmarks/selective_analysis/route_b/README.md#frozen-cutoff-test-on-six-new-projects) |
-| Can live progress be observed cheaply? | All 15 counter-mode runs still active at 100 ms had received counters. Median paired added query time was 0.764 ms, with an 82.874 ms maximum. Identical phase/counter views had different 500 ms continuation outcomes. | [Progress observation](benchmarks/selective_analysis/route_b/README.md#prospective-progress-observation) |
-| Do continuation and switching have different useful regimes? | From 24 resident shared prefixes, continuation was cheaper in 16 pairs, switching was the only validated action in six, and two remained unresolved. Thirteen continuation preferences already had candidate evidence awaiting validation. | [Shared-checkpoint actions](benchmarks/selective_analysis/route_b/README.md#actions-from-a-shared-resident-checkpoint) |
-| How strong is a phase-only rule? | Retrospective replay of continuing candidate validation and otherwise switching preserved 22/24 results while reducing aggregate charged work from 39.409 to 26.337 s. The remaining observed oracle opportunity was 5.938 s across three prefixes. | [Phase-rule replay](benchmarks/selective_analysis/route_b/README.md#phase-only-baseline-replay) |
-| Did the phase rule beat the original cascade in live execution? | With all startup and cleanup charged, the phase rule verified 19/24 queries, versus 12/24 for always-switch and 20/24 for the original cascade. It lost one cascade success and added 1.148 s at the paired batch median. | [Live phase-rule comparison](benchmarks/selective_analysis/route_b/README.md#live-phase-rule-with-charged-cleanup) |
-| What must be checked before another neural trial? | The four live arms' successful-query union equals the cascade's 20/24. Its four successful fallbacks spent 2.443 s in unsuccessful symbolic stages. All twelve timing ELFs lack section tables required by the current DWARF-assisted adapter. Matched neural inputs and acquisition costs remain to be established. | [Feasibility audit](benchmarks/selective_analysis/route_b/README.md#strong-baseline-headroom-and-neural-input-eligibility) |
-| Are native inputs now available? | Twelve native debug/stripped pairs passed code/data identity, 3,072 native output checks, and twelve entry-argument bindings. | [Native input preparation](benchmarks/selective_analysis/route_b/README.md#native-debugstripped-input-preparation) |
-| Does the frozen checkpoint support the new inputs? | Seven of twelve functions have verified genuine entry predictions; five were refused before inference for unsupported relation IDs. utf8proc and LZ4 have identical full entry logits; their encoded input graphs are identical up to a feature-, relation- and readout-preserving node renumbering. | [Native information assessment](benchmarks/selective_analysis/route_b/README.md#local-information-assessment) |
-| What does the matched native baseline show? | The cascade resolved 30/36 trials on twelve known functions, with no wrong decisions. stb ilog and bzip2 remained unknown. Most of miniz and XZ's 2.1 s request time was worker restart after preceding timeouts. | [Native baseline costs](benchmarks/selective_analysis/route_b/README.md#official-native-baseline-results) |
-| Did direct concrete execution improve the native batches? | No: the paired cascade resolved 30/36, direct concrete execution 11/36, with zero direct gains and nineteen losses. The cascade was faster in all six batch pairs by a paired median 6.833 s. Most direct losses followed worker replacement or remaining-budget exhaustion, so local action value remains a separate question. | [Native control results](benchmarks/selective_analysis/route_b/README.md#official-native-control-results) |
+In v5, oracle time headroom was 0.030 s per trial, with a 90% cluster-bootstrap
+interval of [0.000, 0.067] s against a 0.05 s margin. The oracle added no verified
+decisions. All time headroom came from jsonsl and zopfli, so equivalence was not
+established even though the point estimate was inside the margin.
 
-The project's main research questions remain open. **RQ1** asks whether neural
-information improves the same scheduler under an equal end-to-end budget.
-**RQ2** asks whether the candidate set and its scores add value beyond Top-1.
+The original v4 panel included an ill-defined out-of-buffer read in
+`sds-sdsAllocSize-L300`, causing wrong decisions in both symbolic-first arms.
+The report-only sanitizer-screened re-score retained F 118, C 100 and L 108
+verified of 120, with no wrong decisions; **not supported** was unchanged.
 
-The [local action-value matrix](benchmarks/selective_analysis/route_b/README.md#official-local-action-results)
-resolved 30/36 cascade actions and 27/36 direct concrete actions. Direct
-execution was consistently faster on utf8proc and Brotli, without adding
-completions. The [information assessment](benchmarks/selective_analysis/route_b/README.md#local-information-assessment)
-found opposite local choices for utf8proc and LZ4 despite equivalent encoded
-neural inputs. The [no-forward stage audit](benchmarks/selective_analysis/route_b/README.md#confirmed-graph-stage-observations)
-found distinct 25-node and 297-node graphs reduced to three-node variable views,
-and confirmed read-hook field names unregistered by the original runtime.
-The [three-arm no-forward comparison](benchmarks/selective_analysis/route_b/README.md#confirmed-read-hook-intervention-results)
-found that field routing alone preserved both three-node views. Adding AFTER
-read-event timing restored diagnostic parameter dependencies, retaining 17 and
-221 nodes. The restored LZ4 input was refused for relation IDs 50 and 55, outside
-the checkpoint's 44 slots. The [installed-operator audit](benchmarks/selective_analysis/route_b/README.md#confirmed-installed-operator-behavior)
-found that out-of-capacity relation IDs silently contribute no messages in the
-examined RGCN path. This explains why a successful forward would not establish
-input compatibility. The [alternative x64 base weight audit](benchmarks/selective_analysis/route_b/README.md#alternative-x64-base-checkpoint-audit)
-found the same 44-slot limitation in O1, O2 and O3; none passed the complete
-relation-domain requirement. A [six-project data-readiness panel](benchmarks/selective_analysis/route_b/README.md#independent-type-corpus-readiness)
-is pinned with project-level train/development/evaluation splits. Its initial
-inventory completed 10/12 profiles; a missing b64 translation unit is corrected
-in the [v2 recipe](benchmarks/selective_analysis/route_b/README.md#type-corpus-v2-link-recipe-correction).
-The [completed inventory](benchmarks/selective_analysis/route_b/README.md#completed-v2-type-inventory)
-verified all 12 profiles, with 90 O0 functions and 391 source-variable records.
-Training covers 11 observed classes; graph/readout admission remains pending.
-The [four-function mapping audit](benchmarks/selective_analysis/route_b/README.md#confirmed-four-function-mapping-results)
-confirmed recorded location/readout correspondence for all eight selected
-CFA-slot variables, with no model loaded. The [bulk graph exporter](benchmarks/selective_analysis/route_b/README.md#bulk-traindevelopment-graph-export)
-is prepared for all 43 train/development functions and 190 candidate variables.
-The completed export admits 41/43 functions and 181/190 source variables,
-with 129 training variables and 52 development variables. A separate passive
-review rechecked 317 artifact hashes. The [minimal training pilot](benchmarks/selective_analysis/route_b/README.md#minimal-full-relation-training-pilot)
-trains a fresh 60-relation RGCN and an identical architecture with messages
-disabled, with three fixed seeds and source-variable evaluation. It completed in
-WSL: development Top-1 was 28/25/28 of 52 with messages and 25/25/25 without,
-against 11/52 for the frequency prior. A [coverage diagnosis](benchmarks/selective_analysis/route_b/README.md#coverage-and-representation-diagnosis)
-shows that the models mainly separate 32-bit from 64-bit values, so every
-`char*` is predicted as `struct*`. A [pre-registered v2 run](benchmarks/selective_analysis/route_b/README.md#type-pilot-v2-results)
-on two new development projects (200 variables) found no reliable gain from a
-deeper RGCN, and a deterministic structural baseline (121/200) beat every GNN arm. A
-[pre-registered v3 expansion](benchmarks/selective_analysis/route_b/README.md#type-pilot-v3-results)
-to 1,460 training variables did not change that: on 571 fresh development variables the
-decision was negative for neural type information at this scale. A pre-registered
-[v4 test](benchmarks/selective_analysis/route_b/README.md#route-b-v4-structural-selection-results)
-found that a learned structural backend order did not beat the fixed symbolic-first cascade, which
-matched the oracle on verified decisions over 62 held-out queries.
-A pre-registered, sanitizer-screened
-[v5 test](benchmarks/selective_analysis/route_b/README.md#route-b-v5-cascade-headroom-results) on
-169 new queries (41 groups) confirmed that the learned order is not better than the cascade. The
-cascade's remaining time headroom (0.030 s per trial) could not be bounded below the 0.05 s margin.
-Neural scheduling benefit remains unmeasured and Variant E is deferred.
+## Method and safeguards
 
-## Installation
+- Decision protocols are frozen by SHA-256 before held-out runs; changes require
+  separately versioned pre-registration or dated amendments. v1 is exploratory.
+- Project-disjoint panels keep related queries within binary groups; development
+  observations and seed repetitions do not become independent held-out samples.
+- For v4/v5, runtime reference labels remain sealed until all trials are collected;
+  runtime reads query contracts and fixture bytes.
+- Uncertainty is estimated by paired cluster bootstrap over binary groups.
+- Consolidated backends must pass the archived outcome regression gate; v5 re-runs
+  it and requires backend identity against the v4 freeze.
+- The v5 native screen uses ASan/UBSan with ASLR disabled via `setarch`; it excludes
+  undefined behavior and disagreement with MinGW references before freezing.
+- The sealed evaluation projects, utf8.h and b64, were never opened for these runs.
 
-For the model-free pilot, use a Python environment with the
-[minimal requirements](benchmarks/selective_analysis/requirements.txt).
-The documented Windows stack uses Python 3.13.10 and angr 9.2.217. Native
-GlowGNN acquisition uses the original TYGR stack in an isolated WSL environment.
-The Route B pilot runs on CPU. See [runtime compatibility](docs/VERSION_COMPAT.md).
+See the [protocol index](benchmarks/selective_analysis/route_b/README.md#pre-registered-series)
+and [reproducibility guide](docs/REPRODUCIBILITY.md#route-b-v4-and-v5-pipelines).
+
+## Earlier development observations
+
+These are scoped development conclusions. Detailed results remain in the linked
+records and the chronological [Route B README](benchmarks/selective_analysis/route_b/README.md).
+
+| Line of work | Conclusion and existing evidence |
+| --- | --- |
+| Native acquisition and query discrimination | Genuine outputs were admitted, but a query pair had identical model inputs and logits; acquisition costs did not establish an end-to-end gain. [Acquisition audit](docs/pilot_evidence.md#v221-successful-wsl-repair-audit), [comparison](docs/pilot_evidence.md#v23-retained-type-information-collision-audit), [cost interpretation](docs/STATUS.md#current-checkpoint). |
+| Deadline engineering and transfer | Cache-preserving checks improved known cases, but the frozen cutoff did not transfer with a coverage or cost gain. [Cache checks](benchmarks/selective_analysis/route_b/README.md#cache-preserving-deadline-checks), [disjoint-project test](benchmarks/selective_analysis/route_b/README.md#frozen-cutoff-test-on-six-new-projects). |
+| Live progress and action choice | Counters were observable and continuation/switching had different regimes; phase-only replay savings did not become a live advantage over the cascade. [Progress](benchmarks/selective_analysis/route_b/README.md#prospective-progress-observation), [shared checkpoints](benchmarks/selective_analysis/route_b/README.md#actions-from-a-shared-resident-checkpoint), [replay](benchmarks/selective_analysis/route_b/README.md#phase-only-baseline-replay), [live comparison](benchmarks/selective_analysis/route_b/README.md#live-phase-rule-with-charged-cleanup). |
+| Native input eligibility | Timing fixtures needed matched neural inputs; native debug/stripped pairs subsequently passed identity and binding checks. [Feasibility](benchmarks/selective_analysis/route_b/README.md#strong-baseline-headroom-and-neural-input-eligibility), [preparation](benchmarks/selective_analysis/route_b/README.md#native-debugstripped-input-preparation). |
+| Native baseline and direct execution | Direct concrete execution added no batch completions; local speed differences did not establish a scheduling gain. [Baseline](benchmarks/selective_analysis/route_b/README.md#official-native-baseline-results), [control](benchmarks/selective_analysis/route_b/README.md#official-native-control-results), [local actions](benchmarks/selective_analysis/route_b/README.md#official-local-action-results). |
+| Neural representation and compatibility | Equivalent encoded inputs hid opposite local choices; graph/read-hook corrections exposed relation incompatibility, and alternative base weights did not resolve it. [Information assessment](benchmarks/selective_analysis/route_b/README.md#local-information-assessment), [graph audit](benchmarks/selective_analysis/route_b/README.md#confirmed-graph-stage-observations), [read-hook comparison](benchmarks/selective_analysis/route_b/README.md#confirmed-read-hook-intervention-results), [operator audit](benchmarks/selective_analysis/route_b/README.md#confirmed-installed-operator-behavior), [weight audit](benchmarks/selective_analysis/route_b/README.md#alternative-x64-base-checkpoint-audit). |
+| Corpus, mapping and export | Pinned project splits, corrected build recipes and passive audits established an admitted training/development dataset; exclusions remained explicit. [Readiness](benchmarks/selective_analysis/route_b/README.md#independent-type-corpus-readiness), [recipe correction](benchmarks/selective_analysis/route_b/README.md#type-corpus-v2-link-recipe-correction), [inventory](benchmarks/selective_analysis/route_b/README.md#completed-v2-type-inventory), [mapping](benchmarks/selective_analysis/route_b/README.md#confirmed-four-function-mapping-results), [export protocol](benchmarks/selective_analysis/route_b/README.md#bulk-traindevelopment-graph-export), [completed export](benchmarks/selective_analysis/route_b/README.md#completed-bulk-graph-export). |
+| Fresh type training | Training and score replay worked, but predictions mostly separated value widths rather than pointer classes. [Training protocol](benchmarks/selective_analysis/route_b/README.md#minimal-full-relation-training-pilot), [coverage diagnosis](benchmarks/selective_analysis/route_b/README.md#coverage-and-representation-diagnosis). |
+
+## Reproducing the experiments
+
+Use the repository root as the working directory in each runtime. Generated files
+go under `../.scratch/selective_analysis/`. Replace angle-bracket placeholders
+with relative paths under that directory; use fresh output directories.
+
+Use the [minimal requirements](benchmarks/selective_analysis/requirements.txt)
+for the model-free pilot. Native TYGR acquisition uses its isolated original
+runtime; see [runtime compatibility](docs/VERSION_COMPAT.md).
 
 ```bash
 python -m pip install -r benchmarks/selective_analysis/requirements.txt
 ```
 
-## Data
-
-| Panel | Where to find it | Purpose |
-|---|---|---|
-| Twelve generated ELF mechanisms | `benchmarks/selective_analysis/mechanisms.py` | Development fixtures for the original A–D runner. |
-| Compiled integration and typed readiness | `benchmarks/selective_analysis/compiled_queries/`, `typed_complementarity/` | Workload-specific mapping, acquisition and operation checks. |
-| Route B pilot | `benchmarks/selective_analysis/route_b/` | Six new authored programs and twelve fixed queries, grouped by program. |
-
-The repository contains source fixtures and offline reference labels. Obtain
-the pinned TYGR checkpoint and upstream source separately. Historical raw
-receipts stay in local storage, with their identities recorded in the
-[evidence log](docs/pilot_evidence.md). The [reproducibility guide](docs/REPRODUCIBILITY.md)
-describes what can run from a clean checkout.
-
-## Reproducing the experiments
-
-Use the repository root as the working directory. The development workspace
-keeps generated files under the parent directory's `.scratch/selective_analysis/`.
-
-| Check | Command | Runtime |
-|---|---|---|
+| Existing check | Command | Runtime |
+| --- | --- | --- |
 | Route B source reference | `python -B scripts/run_route_b_pilot.py --reference-only` | Windows or WSL, GCC |
 | Route B grouped information comparison | `python -B scripts/run_route_b_pilot.py` | WSL `angr-env` plus original CPU `tygr-orig` |
 | Original model-free pilot | `python -B scripts/run_selective_pilot.py --make-mechanisms --variants A B --budgets 1` | Python with angr |
 | OPM contracts and rendering | `python -B scripts/validate_architecture.py --render` | Python and Graphviz |
 
-See the [Route B protocol](benchmarks/selective_analysis/route_b/README.md) for the
-decision rule and the [pilot guide](benchmarks/selective_analysis/README.md) for
-the original runner and its offline evaluation command.
+### Route B v4 pipeline
 
-## Verification
+Run the rows in order. The gate, freeze and development labels require retained
+historical scratch inputs; the freeze script pins a named regression receipt.
+These are artifact replay procedures, not a clean-checkout one-command run.
 
-- **Source reference.** The Route B runner checks the full declared input range
-  with independently compiled reference executables before collecting type data.
-- **Decision checks.** Decisive analysis results require fresh validation within
-  the query scope. Type input affects priorities only.
-- **Artifact checks.** The guarded model path preserves source/model hashes,
-  location traces and logits. The local v23 synchronization passed 1,285 tests
-  and validated 22 OPM views. See the [verification record](docs/VERIFICATION.md).
+| Step | Exact command | Runtime |
+| --- | --- | --- |
+| 1. Regression gate | `python -B scripts/regress_route_b_v4_backends.py` | WSL `angr-env` |
+| 2. Freeze | `python -B scripts/freeze_route_b_v4.py` | Windows/MinGW |
+| 3. Development labels and fit | `python -B scripts/label_route_b_v4_development.py --freeze <v4-freeze-dir>` | WSL `angr-env` |
+| 4. Plan panel | `python -B scripts/build_route_b_v4_panel.py --plan-only --output <v4-panel-dir>` | Windows/MinGW |
+| 5. Build saved plan | `python -B scripts/build_route_b_v4_panel.py --build --output <v4-panel-dir>` | Windows/MinGW |
+| 6. Collect and audit | `python -B scripts/run_route_b_v4_panel.py --freeze <v4-freeze-dir> --selector <v4-selector-dir> --panel <v4-panel-dir>` | WSL `angr-env` |
+
+### Route B v5 pipeline
+
+The source fetch commands are network-bound; this documentation update does not
+run them. Compile each source manifest before merging. Plan and build share an
+output directory; finalization writes a separate panel directory.
+
+| Step | Exact command | Runtime |
+| --- | --- | --- |
+| 1. Fetch base sources and Juliet | `python -B scripts/prepare_route_b_v5_sources.py` | Windows/MinGW |
+| 2. Base DWARF inventory | `python -B scripts/build_route_b_v5_dwarf.py --sources <base-sources-dir>` | WSL `angr-env` |
+| 3. Fetch added sources | `python -B scripts/prepare_route_b_v5_sources.py --amendment 2` | Windows/MinGW |
+| 4. Added DWARF inventory | `python -B scripts/build_route_b_v5_dwarf.py --sources <added-sources-dir>` | WSL `angr-env` |
+| 5. Merge compiled manifests | `python -B scripts/merge_route_b_v5_sources.py --base <base-sources-dir>/sources-manifest.json --amendment <added-sources-dir>/sources-manifest.json --output <merged-sources-dir>` | Windows/MinGW |
+| 6. Plan panel | `python -B scripts/build_route_b_v5_panel.py --plan-only --sources-manifest <merged-sources-dir>/sources-manifest.json --output <v5-build-dir>` | Windows/MinGW |
+| 7. Build saved plan | `python -B scripts/build_route_b_v5_panel.py --build --output <v5-build-dir>` | Windows/MinGW |
+| 8. Native sanitizer screen | `python -B scripts/screen_route_b_v5_sanitizers.py --build-dir <v5-build-dir> --output <v5-screen-json> --gcc gcc` | WSL `angr-env` |
+| 9. Finalize screened panel | `python -B scripts/build_route_b_v5_panel.py --finalize --build-dir <v5-build-dir> --screen <v5-screen-json> --output <v5-panel-dir>` | Windows/MinGW |
+| 10. Screen earlier panel | `python -B scripts/screen_route_b_v5_sanitizers.py --build-dir <v4-panel-dir> --output <v4-screen-json> --gcc gcc` | WSL `angr-env` |
+| 11. Report-only re-score | `python -B scripts/rescore_route_b_v4_screened.py --run <v4-run-dir> --screen <v4-screen-json> --output <v4-rescore-json>` | Windows or WSL (Python only) |
+| 12. Re-run regression gate | `python -B scripts/regress_route_b_v4_backends.py` | WSL `angr-env` |
+| 13. Freeze | `python -B scripts/freeze_route_b_v5.py --sources <merged-sources-dir> --build <v5-build-dir> --screen <v5-screen-json> --panel <v5-panel-dir> --regression <rerun-regression-dir>` | Windows/MinGW |
+| 14. Development labels and refit | `python -B scripts/label_route_b_v5_development.py --freeze <v5-freeze-dir>` | WSL `angr-env` |
+| 15. Collect and audit | `python -B scripts/run_route_b_v5_panel.py --freeze <v5-freeze-dir> --selector <v5-selector-dir> --panel <v5-panel-dir>` | WSL `angr-env` |
+| 16. Report | `python -B scripts/report_route_b_v5.py --run <v5-run-dir> --selection <v5-panel-dir>/selection.json --screen <v5-screen-json> --v4-screen <v4-screen-json> --v4-rescore <v4-rescore-json> --v4-run <v4-run-dir> --output <v5-report-dir>` | Windows or WSL (Python only) |
+
+WSL uses Ubuntu with gcc 9, libasan and `setarch` for the sanitizer screen.
+The screen itself disables ASLR. MinGW gcc builds the native query fixtures on
+Windows. See the [pipeline and artifact guide](docs/REPRODUCIBILITY.md#route-b-v4-and-v5-pipelines)
+for pinned prerequisites and retained outputs, and the
+[pilot guide](benchmarks/selective_analysis/README.md) for earlier commands.
 
 ## Limitations
 
-The verified neural results so far are development observations. Route B uses six
-separately compiled authored programs with a shared harness, and its two queries
-per program share a neural record. The type interface relies on DWARF locations.
-Scores are uncalibrated. Each decision covers a declared first-visit write query
-under modeled assumptions. The project has yet to demonstrate neural scheduling
-benefit or generalization to independent real projects.
+| Boundary | Scope of the finding |
+| --- | --- |
+| Scale | Type v2 used 200 development variables in two projects; v3 used 571 in three. Backend panels were 62 queries / 17 groups (v4) and 169 / 41 (v5). |
+| Backend catalog | Only `symbolic_certificate` and `concrete_enumeration`, with fixed-order and learned-order comparisons. |
+| Query and budget | v4/v5 use scoped finite-domain write-bound queries, a 3 s per-query budget and a finite 256-input domain. |
+| Compilation | v4/v5 analyze x86-64 freestanding kernels built with MinGW; WSL native sanitizer builds screen their reference adapters. |
+| Selector | One selector model family was tested: structural logistic and ridge regressions with a fixed expected-time order rule. |
+| Neural evidence | Type accuracy is not scheduling benefit; the type pilots did not establish incremental information beyond structure. Neural scheduling benefit was not shown. |
+| Headroom | v5 did not establish equivalence to the oracle within the time margin; the remaining measured opportunity is concentrated in jsonsl and zopfli. |
+
+The type interface relies on DWARF-assisted locations and uncalibrated scores.
+These results do not establish whole-program correctness or a general limit on
+other backend catalogs, model families or query domains.
 
 ## Repository structure
 
 ```text
 src/selective_analysis/            Query contracts, checkers, selectors and evidence
-benchmarks/selective_analysis/     Developer fixtures and run guides
-  route_b/                         New program groups and offline reference labels
+benchmarks/selective_analysis/     Development fixtures and run guides
+  route_b/                         Pre-registrations, amendments and result records
 scripts/                           Experiment and validation entry points
 docs/architecture/                 OPM DOT sources, SVGs and frozen specifications
 docs/pilot_evidence.md             Chronological evidence and receipt identities
 tests/                             Contract, analysis and reproduction checks
 ```
 
-The [documentation map](docs/README.md) links the current guides and earlier
-experiments on the separate legacy pipeline.
+The [documentation map](docs/README.md) links current guides and legacy records.
+The [evidence log](docs/pilot_evidence.md) records local receipt identities;
+upstream sources, model weights and historical raw bundles are obtained separately.
 
 ## Citation
 
@@ -193,4 +186,4 @@ and the specific commit or experiment protocol used.
 
 ## License
 
-Project source is distributed under the [Apache License 2.0](LICENSE).
+Project source is distributed under the [Apache license](LICENSE).

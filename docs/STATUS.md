@@ -1,5 +1,17 @@
 # Project status
 
+## Current checkpoint (Route B v5)
+
+At this scale, the pre-registered series found:
+- no incremental neural type information beyond a structural baseline (v2, v3);
+- no gain from a learned structural order over the fixed symbolic-then-concrete
+  cascade (v4, v5).
+[v5 results](../benchmarks/selective_analysis/route_b/README.md#route-b-v5-cascade-headroom-results): 169 queries in 41 binary groups, no wrong decisions.
+**Q1 not supported:** oracle time headroom was 0.030 s per trial, with a 90% interval of [0.000, 0.067] s against a 0.05 s margin; it added no verified decisions.
+**Q2 supported:** learned order was non-superior to the cascade. Time headroom came entirely from jsonsl and zopfli.
+See the [design](../benchmarks/selective_analysis/route_b/cascade_headroom_v5_design.md), [amendments](../benchmarks/selective_analysis/route_b/README.md#pre-registered-series) and [reproduction steps](REPRODUCIBILITY.md#route-b-v4-and-v5-pipelines).
+The earlier checkpoint and chronological development notes below are retained.
+
 Updated 13 November 2026. The active protocol is **frozen pilot v1**, established on
 10 November; the latest completed diagnostic is **development v23**. Development
 revision numbers are separate from the legacy 13-stage pipeline's version numbers.
