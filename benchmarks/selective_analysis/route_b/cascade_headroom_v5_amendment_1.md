@@ -43,8 +43,16 @@ with the design.
   | siphash | veorq/SipHash |
   | t1ha | erthink/t1ha (src) |
 
-- **Header-only libraries.** For nanoprintf, the translation unit is a one-line file that defines
-  the library's documented implementation macro and includes the header. Any such file is
-  recorded in the sources manifest.
+- **Header-only libraries.** For header-only candidates (nanoprintf, tinyobjloader_c), the
+  translation unit is a one-line file that defines the library's documented implementation macro
+  and includes the header. Each such file is recorded in the sources manifest.
+- **Translation units.** In every project, a translation unit is excluded if any of these holds:
+  - it defines `main`;
+  - its path contains a test, example, bench, fuzz, demo or tool directory;
+  - its file name contains `test`, `utf8`, `b64` or `base64`.
+
+  The remaining units are compiled with the project-specific include directories and
+  preprocessor definitions that are recorded in the sources manifest. A unit that does not compile
+  is recorded and dropped. A project with no compiling unit is dropped.
 
 The 30-group, 120-query minimum and the rule for later amendments are unchanged.
