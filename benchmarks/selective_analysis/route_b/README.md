@@ -3134,3 +3134,78 @@ example, a sanitizer-instrumented native reference) before admitting pointer-par
 Across v1-v4, neither neural type scores nor a learned structural order improved on the fixed
 symbolic-to-concrete cascade for finite-domain write-bound queries at this scale. Per the
 pre-registration, Route B now reports the characterization and these negative results.
+
+### Route B v5 cascade headroom results
+
+The [v5 pre-registration](cascade_headroom_v5_design.md) and its dated amendments
+([1](cascade_headroom_v5_amendment_1.md), [2](cascade_headroom_v5_amendment_2.md),
+[3](cascade_headroom_v5_amendment_3.md)) were frozen in `route-b-v5-freeze-20261122T221749467036Z`
+(commit cf0fa64). No analysis backend touched a held-out query before the freeze. The v4 backends were
+byte-identical to the v4 freeze, and the re-run v4 regression gate passed
+(`route-b-v4-backend-regression-20261122T114154345536Z`).
+
+- **Sources.** The S2 sources come from 100 candidate projects: 40 in amendment 1 and 60 added
+  by amendment 2 after an undersized native build. They were pinned at their default-branch
+  heads and merged into one manifest. 86 had a DWARF inventory; three overlapped earlier
+  cohorts (littlefs, zlib, libtommath) and were excluded.
+- **Sanitizer screen.** The screen ran with address randomization disabled (amendment 3). It
+  excluded 20 of 187 built kernels:
+  - 17 for native undefined behavior: 16 UBSan reports (`clz`/`ctz` of zero, an index of -257,
+    and others) and one stack-buffer underflow;
+  - 3 for a native index that disagreed with the MinGW reference.
+
+  On the v4 panel, the same screen excluded only `sds-sdsAllocSize-L300`, the ill-defined query
+  behind every v4 wrong decision.
+- **Panel.** The finalized panel (`route-b-v5-panel-20261122T221742Z`) has 169 queries in 41
+  binary groups, above the minimum of 120 queries and 30 groups. It has 160 S2 queries from 38
+  projects (at most 4 kernels each) and 9 S1 queries from 3 complete Juliet CWE124 triples. The
+  references hold 79 safe and 90 violation queries.
+- **Selector L.** L was refitted on 564 single-backend runs over 141 development queries (the 79
+  v4 development queries and the 62 v4 panel queries) in
+  `route-b-v5-selector-20261122T221820142755Z`.
+- **Run.** `route-b-v5-run-20261122T222921001778Z` ran F, C and L once, with two repetitions, a
+  3 s budget, and a fresh warm worker per group, arm and repetition. There were no wrong
+  decisions and no worker replacements.
+
+| Arm | Verified (of 338) | Charged seconds | S1 | S2 |
+| --- | ---: | ---: | ---: | ---: |
+| F symbolic then concrete | 332 | 97.0 | 18/18 | 314/320 |
+| C concrete then symbolic | 298 | 533.9 | 18/18 | 280/320 |
+| L learned order | 326 | 113.7 | 18/18 | 308/320 |
+| O oracle over F and C | 332 | 86.8 | 18/18 | 314/320 |
+
+| Contrast (per trial) | Estimate | 90% cluster-bootstrap interval | Margin |
+| --- | ---: | --- | ---: |
+| D_t(F,O) seconds | 0.030 | [0.000, 0.067] | 0.05 |
+| D_v(O,F) verified rate | 0.000 | [0.000, 0.000] | 0.02 |
+| D_t(F,L) seconds | -0.049 | [-0.098, -0.011] | 0.05 |
+| D_v(L,F) verified rate | -0.018 | [-0.042, 0.000] | 0.02 |
+
+**Pre-registered decisions.**
+- **Q1 not supported.** F's equivalence to the oracle is not shown. On verification there is no
+  headroom: O verifies exactly what F verifies. In time, the point estimate (0.030 s per trial)
+  is inside the margin, but the interval's upper end (0.067 s) is not. All of the 10.3 s total
+  headroom comes from two binary groups: jsonsl (56%) and zopfli (44%). Five of their kernels
+  are not decided by the symbolic certificate within about 1 s; F then falls back to concrete
+  enumeration and finishes in 2.2-2.5 s, while concrete-first finishes in about 1.25 s.
+  Resampling these two groups widens the interval past the margin.
+- **Q2 supported.** L is non-superior to F. It is in fact measurably slower (the whole interval
+  of D_t(F,L) is below zero) and verifies 6 fewer trials. L ran concrete-first on 5 queries, none
+  of them the 5 headroom queries, so it does not capture the headroom.
+
+F leaves 6 S2 trials unverified (three queries: two `kissfft` capacities and one `lzfse`); no arm
+verifies them.
+
+Report-only blocks (`route-b-v5-report-20261122T211650Z`):
+- v4 and v5 pooled: D_t(F,O) = 0.014 s [-0.013, 0.045] and D_t(F,L) = -0.092 s [-0.175, -0.027].
+- v4 re-scored without the screen-excluded kernel: F 118, C 100, L 108 verified of 120, with no
+  wrong decisions. The v4 decision is unchanged (not supported).
+
+Taken together with v1-v4, the result is a characterization rather than a method gain:
+- neither neural type scores nor learned structural selection improves on the fixed
+  symbolic-first cascade at this scale;
+- the cascade's remaining headroom is small;
+- that headroom is concentrated in a few kernels where the symbolic certificate gives up late.
+
+The obvious follow-up (an early symbolic give-up rule) is outside the frozen v5 design and needs
+its own pre-registration.

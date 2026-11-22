@@ -957,6 +957,15 @@ queries (17 binary groups) was **not supported**: the fixed symbolic-first casca
 decisions. One ill-defined kernel query (out-of-buffer read) produced wrong decisions in both
 symbolic-first arms. See
 [v4 results](../benchmarks/selective_analysis/route_b/README.md#route-b-v4-structural-selection-results).
+The pre-registered v5 test on a new, sanitizer-screened panel (169 queries, 41 binary groups) had no
+wrong decisions:
+- **Q2 supported:** the refitted learned order was non-superior to the fixed cascade, and in fact
+  slower.
+- **Q1 not supported:** the cascade's headroom against the oracle was 0.030 s per trial, with a
+  90% interval of [0.000, 0.067] against a 0.05 s margin, and zero in verified decisions. The time
+  headroom came entirely from five kernels in two projects.
+
+See [v5 results](../benchmarks/selective_analysis/route_b/README.md#route-b-v5-cascade-headroom-results).
 [Native input preparation](../benchmarks/selective_analysis/route_b/README.md#native-debugstripped-input-preparation).
 [Two-function neural probe](../benchmarks/selective_analysis/route_b/README.md#two-function-native-neural-probe).
 [Native coverage and baseline gate](../benchmarks/selective_analysis/route_b/README.md#twelve-function-neural-coverage-audit).

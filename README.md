@@ -104,6 +104,10 @@ decision was negative for neural type information at this scale. A pre-registere
 [v4 test](benchmarks/selective_analysis/route_b/README.md#route-b-v4-structural-selection-results)
 found that a learned structural backend order did not beat the fixed symbolic-first cascade, which
 matched the oracle on verified decisions over 62 held-out queries.
+A pre-registered, sanitizer-screened
+[v5 test](benchmarks/selective_analysis/route_b/README.md#route-b-v5-cascade-headroom-results) on
+169 new queries (41 groups) confirmed that the learned order is not better than the cascade. The
+cascade's remaining time headroom (0.030 s per trial) could not be bounded below the 0.05 s margin.
 Neural scheduling benefit remains unmeasured and Variant E is deferred.
 
 ## Installation
