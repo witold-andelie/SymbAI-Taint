@@ -94,9 +94,9 @@ are part of admission checks. Failed receipts remain failures.
 These pipelines replay retained artifacts and require the historical scratch
 inputs named by the scripts. They are not complete clean-checkout runs. Run from
 the repository root in each runtime, using relative paths. Generated files go
-under `../.scratch/selective_analysis/`. The main README gives the exact
-[v4 commands](../README.md#route-b-v4-pipeline) and
-[v5 commands](../README.md#route-b-v5-pipeline), including all required arguments.
+under `../.scratch/selective_analysis/`. The tables below give the exact commands
+with their required arguments; replace angle-bracket placeholders with relative
+paths under that directory and use fresh output directories.
 
 | Runtime | Required tools and role |
 | --- | --- |
@@ -108,14 +108,14 @@ The sanitizer runner applies `setarch <arch> -R` itself. ASLR must be disabled;
 the instrument livelock signature aborts the screen instead of becoming a kernel
 exclusion ([amendment 3](../benchmarks/selective_analysis/route_b/cascade_headroom_v5_amendment_3.md#2-sanitizer-runtime-under-address-randomization)).
 
-| v4 order | Step and runtime |
-| --- | --- |
-| 1 | `regress_route_b_v4_backends.py` in WSL `angr-env`: reproduce archived outcomes. |
-| 2 | `freeze_route_b_v4.py` on Windows: pin the design, implementation and regression evidence. |
-| 3 | `label_route_b_v4_development.py --freeze <v4-freeze-dir>` in WSL `angr-env`: label development data and fit L. |
-| 4 | `build_route_b_v4_panel.py --plan-only --output <v4-panel-dir>` on Windows/MinGW. |
-| 5 | `build_route_b_v4_panel.py --build --output <v4-panel-dir>` on Windows/MinGW, reusing the saved plan. |
-| 6 | `run_route_b_v4_panel.py --freeze <v4-freeze-dir> --selector <v4-selector-dir> --panel <v4-panel-dir>` in WSL `angr-env`, followed by its offline audit. |
+| Step | Exact command | Runtime |
+| --- | --- | --- |
+| 1. Regression gate | `python -B scripts/regress_route_b_v4_backends.py` | WSL `angr-env` |
+| 2. Freeze | `python -B scripts/freeze_route_b_v4.py` | Windows/MinGW |
+| 3. Development labels and fit | `python -B scripts/label_route_b_v4_development.py --freeze <v4-freeze-dir>` | WSL `angr-env` |
+| 4. Plan panel | `python -B scripts/build_route_b_v4_panel.py --plan-only --output <v4-panel-dir>` | Windows/MinGW |
+| 5. Build saved plan | `python -B scripts/build_route_b_v4_panel.py --build --output <v4-panel-dir>` | Windows/MinGW |
+| 6. Collect and audit | `python -B scripts/run_route_b_v4_panel.py --freeze <v4-freeze-dir> --selector <v4-selector-dir> --panel <v4-panel-dir>` | WSL `angr-env` |
 
 The regression script requires `route-b-project-disjoint-20261119T141817Z`, its
 `intake.json`, fixture binaries and per-case native references. The v4 freeze
@@ -125,22 +125,24 @@ earlier `route-b-*/intake.json` bundles, and panel planning reads retained sourc
 manifests and DWARF inventories. Missing receipts cannot be replaced by invented
 hashes or labels.
 
-| v5 order | Step and runtime |
-| --- | --- |
-| 1 | `prepare_route_b_v5_sources.py` on Windows: fetch base projects and Juliet. |
-| 2 | `build_route_b_v5_dwarf.py --sources <base-sources-dir>` in WSL: compile the base inventory. |
-| 3 | `prepare_route_b_v5_sources.py --amendment 2` on Windows: fetch the added projects. |
-| 4 | `build_route_b_v5_dwarf.py --sources <added-sources-dir>` in WSL: compile the added inventory. |
-| 5 | `merge_route_b_v5_sources.py` on Windows: merge the compiled manifests, retaining the base Juliet section. |
-| 6 | `build_route_b_v5_panel.py --plan-only`, then `--build` on Windows/MinGW, with the same output directory. |
-| 7 | `screen_route_b_v5_sanitizers.py` in WSL: screen the unscreened native build. |
-| 8 | `build_route_b_v5_panel.py --finalize` on Windows: apply the screen and caps into a separate panel directory. |
-| 9 | `screen_route_b_v5_sanitizers.py` on the v4 panel, then `rescore_route_b_v4_screened.py`, in WSL; report-only sensitivity analysis. |
-| 10 | Re-run `regress_route_b_v4_backends.py` in WSL `angr-env`. |
-| 11 | `freeze_route_b_v5.py` on Windows: pin the design, amendments, implementation, compiled sources, build, screen, panel and re-run gate. |
-| 12 | `label_route_b_v5_development.py --freeze <v5-freeze-dir>` in WSL `angr-env`: refit L using earlier queries only. |
-| 13 | `run_route_b_v5_panel.py` in WSL `angr-env`: collect every trial before opening offline references. |
-| 14 | `report_route_b_v5.py` in WSL `angr-env`: combine decisions, exclusions, v4 re-scoring and report-only pooled results. |
+| Step | Exact command | Runtime |
+| --- | --- | --- |
+| 1. Fetch base sources and Juliet | `python -B scripts/prepare_route_b_v5_sources.py` | Windows/MinGW |
+| 2. Base DWARF inventory | `python -B scripts/build_route_b_v5_dwarf.py --sources <base-sources-dir>` | WSL `angr-env` |
+| 3. Fetch added sources | `python -B scripts/prepare_route_b_v5_sources.py --amendment 2` | Windows/MinGW |
+| 4. Added DWARF inventory | `python -B scripts/build_route_b_v5_dwarf.py --sources <added-sources-dir>` | WSL `angr-env` |
+| 5. Merge compiled manifests | `python -B scripts/merge_route_b_v5_sources.py --base <base-sources-dir>/sources-manifest.json --amendment <added-sources-dir>/sources-manifest.json --output <merged-sources-dir>` | Windows/MinGW |
+| 6. Plan panel | `python -B scripts/build_route_b_v5_panel.py --plan-only --sources-manifest <merged-sources-dir>/sources-manifest.json --output <v5-build-dir>` | Windows/MinGW |
+| 7. Build saved plan | `python -B scripts/build_route_b_v5_panel.py --build --output <v5-build-dir>` | Windows/MinGW |
+| 8. Native sanitizer screen | `python -B scripts/screen_route_b_v5_sanitizers.py --build-dir <v5-build-dir> --output <v5-screen-json> --gcc gcc` | WSL `angr-env` |
+| 9. Finalize screened panel | `python -B scripts/build_route_b_v5_panel.py --finalize --build-dir <v5-build-dir> --screen <v5-screen-json> --output <v5-panel-dir>` | Windows/MinGW |
+| 10. Screen earlier panel | `python -B scripts/screen_route_b_v5_sanitizers.py --build-dir <v4-panel-dir> --output <v4-screen-json> --gcc gcc` | WSL `angr-env` |
+| 11. Report-only re-score | `python -B scripts/rescore_route_b_v4_screened.py --run <v4-run-dir> --screen <v4-screen-json> --output <v4-rescore-json>` | Windows or WSL (Python only) |
+| 12. Re-run regression gate | `python -B scripts/regress_route_b_v4_backends.py` | WSL `angr-env` |
+| 13. Freeze | `python -B scripts/freeze_route_b_v5.py --sources <merged-sources-dir> --build <v5-build-dir> --screen <v5-screen-json> --panel <v5-panel-dir> --regression <rerun-regression-dir>` | Windows/MinGW |
+| 14. Development labels and refit | `python -B scripts/label_route_b_v5_development.py --freeze <v5-freeze-dir>` | WSL `angr-env` |
+| 15. Collect and audit | `python -B scripts/run_route_b_v5_panel.py --freeze <v5-freeze-dir> --selector <v5-selector-dir> --panel <v5-panel-dir>` | WSL `angr-env` |
+| 16. Report | `python -B scripts/report_route_b_v5.py --run <v5-run-dir> --selection <v5-panel-dir>/selection.json --screen <v5-screen-json> --v4-screen <v4-screen-json> --v4-rescore <v4-rescore-json> --v4-run <v4-run-dir> --output <v5-report-dir>` | Windows or WSL (Python only) |
 
 Only source preparation is network-bound: both project-fetch modes invoke
 `git clone`, and the base preparation downloads the official Juliet archive via
